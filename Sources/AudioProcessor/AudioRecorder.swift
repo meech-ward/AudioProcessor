@@ -14,7 +14,7 @@ public struct AudioRecorder {
     private let recordable: AudioRecordable
     private let dataClosure: AudioRecorderDataClosure
     
-    init(recordable: AudioRecordable, dataClosure: @escaping AudioRecorderDataClosure = {_ in }) {
+    init(recordable: AudioRecordable, timer: TimerType? = nil, dataClosure: @escaping AudioRecorderDataClosure = {_ in }) {
         self.recordable = recordable
         self.dataClosure = dataClosure
     }

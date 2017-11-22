@@ -8,7 +8,7 @@
 import Foundation
 
 /// Some sort of recorder
-protocol AudioRecordable {
+public protocol AudioRecordable {
     
     /// Start Recording
     func start()

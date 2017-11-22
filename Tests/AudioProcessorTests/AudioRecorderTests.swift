@@ -22,6 +22,22 @@ class MockRecordable: AudioRecordable {
     }
 }
 
+class MockTimer: TimerType {
+    
+    var block: (() -> (Void))?
+    
+    func start(_ block: @escaping () -> (Void)) {
+        self.block = block
+    }
+    
+    func stop() {
+        
+    }
+    
+    
+    
+}
+
 class AudioRecorderTests: XCTestCase {
     
     override class func setUp() {
@@ -74,17 +90,37 @@ class AudioRecorderTests: XCTestCase {
                             audioRecorder.start()
                             expect(audioData.power == 1).to.be.true()
                         }
+                    }
                         
-                        it("should pass in the recordable's decible power approximately every 0.1 seconds") {
-                            mockRecordable.decibelPower = 0
-                            audioRecorder.start()
-                            expect(audioData.power == 0).to.be.true()
-                            
-                            mockRecordable.decibelPower = 1
-                            audioRecorder.start()
-                            expect(audioData.power == 1).to.be.true()
+                    context("when initialized with a Timer") {
+                        
+//                        var audioData: (power: Float?, updateClosure: (()->(Void))?) = (nil, nil)
+                        // Be able to pass in a paramter that is a closure that starts a timer but allows the recorder to pass in a function so that every time the timer, or in this case a manually triggered event, is called; it calls the f data closure with the most up to date data.
+                        // self.timer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true, block:self.timerUpdated)
+                        beforeEach {
+                            let mockTimer = MockTimer()
+                            mockRecordable = MockRecordable()
+                            audioRecorder = AudioRecorder(recordable: mockRecordable, timer: mockTimer, dataClosure: { power in
+                                audioData.power = power
+                            })
                         }
                         
+                        
+                        describe("#start()") {
+                            it ("should start the timer") {
+                                
+                            }
+                            
+                            it ("should update the audio data every time the timer triggers") {
+                                
+                            }
+                        }
+                        
+                        describe("#stop()") {
+                            it ("Should stop the timer") {
+                                
+                            }
+                        }
                     }
                 }
             }
