@@ -24,9 +24,7 @@ public struct AudioRecorder {
     func start() {
         recordable.start()
         sendNewDataSample()
-        self.dataTimer?.start {
-            self.sendNewDataSample()
-        }
+        self.dataTimer?.start(self.sendNewDataSample)
     }
     
     /// Create an audio sample and send it to the data closure
