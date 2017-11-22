@@ -7,16 +7,22 @@
 
 import Foundation
 
-struct AudioRecorder {
+typealias AudioRecorderDataClosure = ((_ averagePower: Float) -> (Void))
+
+public struct AudioRecorder {
     
-    let recordable: AudioRecordable
+    private let recordable: AudioRecordable
+    private let dataClosure: AudioRecorderDataClosure
     
-    init(recordable: AudioRecordable, dataClosure: ((_ meterLevel: Float) -> (Void)) = {_ in }) {
+    init(recordable: AudioRecordable, dataClosure: @escaping AudioRecorderDataClosure = {_ in }) {
         self.recordable = recordable
+        self.dataClosure = dataClosure
     }
     
     func start() {
         recordable.start()
+        let power = recordable.averageDecibelPower(forChannel: 0)
+        self.dataClosure(power)
     }
     
     func stop() {
