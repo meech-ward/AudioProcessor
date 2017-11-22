@@ -81,10 +81,12 @@ class AudioRecorderTests: XCTestCase {
                 context("when initialized with an audio data closure") {
                 
                     var audioSample: AudioSample?
+                    var passedInRecordable: AudioRecordable?
                     beforeEach {
                         mockRecordable = MockRecordable()
-                        audioRecorder = AudioRecorder(recordable: mockRecordable) { sample in
+                        audioRecorder = AudioRecorder(recordable: mockRecordable) { sample, recordable in
                             audioSample = sample
+                            passedInRecordable = recordable
                         }
                     }
                     
@@ -108,6 +110,14 @@ class AudioRecorderTests: XCTestCase {
                             audioRecorder.start()
                             expect(audioSample?.time == 1).to.be.true()
                         }
+                        
+                        it("should pass in the recordable object") {
+                            guard let passedInRecordable = passedInRecordable as? MockRecordable else {
+                                expect("").to.fail("passedInRecordable is nil")
+                                return
+                            }
+                            expect(mockRecordable === passedInRecordable).to.be.true()
+                        }
                     }
                         
                     context("when initialized with a Timer") {
@@ -119,7 +129,7 @@ class AudioRecorderTests: XCTestCase {
                         beforeEach {
                             mockTimer = MockTimer()
                             mockRecordable = MockRecordable()
-                            audioRecorder = AudioRecorder(recordable: mockRecordable, dataTimer: mockTimer, dataClosure: { sample in
+                            audioRecorder = AudioRecorder(recordable: mockRecordable, dataTimer: mockTimer, dataClosure: { sample, recordable  in
                                 audioSample = sample
                             })
                         }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-typealias AudioRecorderDataClosure = ((_ audioSample: AudioSample) -> (Void))
+typealias AudioRecorderDataClosure = ((_ audioSample: AudioSample, _ audioRecordable: AudioRecordable) -> (Void))
 
 public struct AudioRecorder {
     
@@ -15,7 +15,7 @@ public struct AudioRecorder {
     private let dataClosure: AudioRecorderDataClosure
     private let dataTimer: TimerType?
     
-    init(recordable: AudioRecordable, dataTimer: TimerType? = nil, dataClosure: @escaping AudioRecorderDataClosure = {_ in }) {
+    init(recordable: AudioRecordable, dataTimer: TimerType? = nil, dataClosure: @escaping AudioRecorderDataClosure = {_,_ in }) {
         self.recordable = recordable
         self.dataClosure = dataClosure
         self.dataTimer = dataTimer
@@ -32,7 +32,7 @@ public struct AudioRecorder {
         let power = recordable.averageDecibelPower(forChannel: 0)
         let time = recordable.currentTime
         let sample = AudioSample(time: time, power: power)
-        self.dataClosure(sample)
+        self.dataClosure(sample, recordable)
     }
     
     func stop() {
