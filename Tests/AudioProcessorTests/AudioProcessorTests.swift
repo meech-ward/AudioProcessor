@@ -1,16 +1,22 @@
 import XCTest
+import Observe
+import Focus
 @testable import AudioProcessor
 
 class AudioProcessorTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(AudioProcessor().text, "Hello, World!")
+    
+    override class func setUp() {
+        Focus.defaultReporter().failBlock = XCTFail
+    }
+    
+    func testSpec() {
+        describe("Person") {
+            expect(false).to.be.true();
+        }
     }
 
 
     static var allTests = [
-        ("testExample", testExample),
+        ("testSpec", testSpec),
     ]
 }
