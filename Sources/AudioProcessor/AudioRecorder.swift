@@ -13,14 +13,24 @@ public struct AudioRecorder {
     
     private let recordable: AudioRecordable
     private let dataClosure: AudioRecorderDataClosure
+    private let dataTimer: TimerType?
     
     init(recordable: AudioRecordable, dataTimer: TimerType? = nil, dataClosure: @escaping AudioRecorderDataClosure = {_ in }) {
         self.recordable = recordable
         self.dataClosure = dataClosure
+        self.dataTimer = dataTimer
     }
     
     func start() {
         recordable.start()
+        sendNewDataSample()
+        self.dataTimer?.start {
+            self.sendNewDataSample()
+        }
+    }
+    
+    /// Create an audio sample and send it to the data closure
+    func sendNewDataSample() {
         let power = recordable.averageDecibelPower(forChannel: 0)
         let time = recordable.currentTime
         let sample = AudioSample(time: time, power: power)
@@ -29,6 +39,7 @@ public struct AudioRecorder {
     
     func stop() {
         recordable.stop()
+        self.dataTimer?.stop()
     }
     
 }
