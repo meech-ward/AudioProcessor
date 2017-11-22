@@ -21,4 +21,7 @@ public protocol AudioRecordable {
      - parameter: channelNumber: The number of the channel that you want the average power value for.
     */
     func averageDecibelPower(forChannel channelNumber: Int) -> Float
+    
+    /// The time, in seconds, since the beginning of the recording.
+    var currentTime: TimeInterval { get }
 }

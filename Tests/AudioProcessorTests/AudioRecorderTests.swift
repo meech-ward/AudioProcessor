@@ -4,6 +4,9 @@ import Focus
 @testable import AudioProcessor
 
 class MockRecordable: AudioRecordable {
+    
+    var currentTime: TimeInterval = 0
+    
     var started = false;
     var stopped = false;
     var decibelPower: Float = 0;
@@ -20,6 +23,7 @@ class MockRecordable: AudioRecordable {
         }
         return 0
     }
+    
 }
 
 class MockTimer: TimerType {
@@ -72,11 +76,11 @@ class AudioRecorderTests: XCTestCase {
                 
                 context("when initialized with an audio data closure") {
                 
-                    var audioData: (power: Float?, data: Any?) = (nil, nil)
+                    var audioSample: AudioSample?
                     beforeEach {
                         mockRecordable = MockRecordable()
-                        audioRecorder = AudioRecorder(recordable: mockRecordable) { power in
-                            audioData.power = power
+                        audioRecorder = AudioRecorder(recordable: mockRecordable) { sample in
+                            audioSample = sample
                         }
                     }
                     
@@ -84,11 +88,21 @@ class AudioRecorderTests: XCTestCase {
                         it("should pass in the recordable's initial decible power") {
                             mockRecordable.decibelPower = 0
                             audioRecorder.start()
-                            expect(audioData.power == 0).to.be.true()
+                            expect(audioSample?.power == 0).to.be.true()
                             
                             mockRecordable.decibelPower = 1
                             audioRecorder.start()
-                            expect(audioData.power == 1).to.be.true()
+                            expect(audioSample?.power == 1).to.be.true()
+                        }
+                        
+                        it("should pass in the recordable's current time power") {
+                            mockRecordable.currentTime = 0
+                            audioRecorder.start()
+                            expect(audioSample?.time == 0).to.be.true()
+                            
+                            mockRecordable.currentTime = 1
+                            audioRecorder.start()
+                            expect(audioSample?.time == 1).to.be.true()
                         }
                     }
                         
@@ -100,8 +114,8 @@ class AudioRecorderTests: XCTestCase {
                         beforeEach {
                             let mockTimer = MockTimer()
                             mockRecordable = MockRecordable()
-                            audioRecorder = AudioRecorder(recordable: mockRecordable, timer: mockTimer, dataClosure: { power in
-                                audioData.power = power
+                            audioRecorder = AudioRecorder(recordable: mockRecordable, dataTimer: mockTimer, dataClosure: { sample in
+                                audioSample = sample
                             })
                         }
                         
