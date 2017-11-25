@@ -1,34 +1,100 @@
-//
-//  AudioRecorder_AudioFrequencyTracker.swift
-//  AudioProcessorTests
-//
-//  Created by Sam Meech-Ward on 2017-11-25.
-//
-
 import XCTest
+import Observe
+import Focus
+@testable import AudioProcessor
 
-class AudioRecorder_AudioFrequencyTracker: XCTestCase {
+fileprivate class MockAudioFrequencyTracker: AudioFrequencyTracker {
+    var frequency: Double?
+}
+
+/// Tests for the Audio Recorder Object when initialized with an AudioPowerTracker
+class AudioRecorder_AudioFrequencyTracker_tests: XCTestCase {
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    override class func setUp() {
+        Focus.defaultReporter().failBlock = XCTFail
     }
     
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    func testSpec() {
+        describe("AudioRecorder") {
+            
+            context("when initialized with an AudioRecordable") {
+                
+                context("when initialized with an AudioPowerTracker") {
+                    
+                    context("when initialized with an audio data closure") {
+                        
+                        var audioRecorder: AudioRecorder!
+                        var mockRecordable: MockRecordable!
+                        var audioSample: AudioSample?
+                        var mockFrequencyTracker: MockAudioFrequencyTracker!
+                        beforeEach {
+                            mockFrequencyTracker = MockAudioFrequencyTracker()
+                            mockRecordable = MockRecordable()
+                            audioRecorder = AudioRecorder(recordable: mockRecordable, frequencyTracker: mockFrequencyTracker) { sample, recordable in
+                                audioSample = sample
+                            }
+                        }
+                        
+                        describe("#start()") {
+                            
+                            
+                            
+                            it("should pass in the recordable's initial decible power") {
+                                mockFrequencyTracker.frequency = 0
+                                audioRecorder.start()
+                                expect(audioSample?.frequency == 0).to.be.true()
+                                
+                                mockFrequencyTracker.frequency = 1
+                                audioRecorder.start()
+                                expect(audioSample?.frequency == 1).to.be.true()
+                            }
+                        }
+                        
+                        context("when initialized with a Timer") {
+                            
+                            var mockTimer: MockTimer!
+                            beforeEach {
+                                mockTimer = MockTimer()
+                                mockRecordable = MockRecordable()
+                                mockFrequencyTracker = MockAudioFrequencyTracker()
+                                audioRecorder = AudioRecorder(recordable: mockRecordable, frequencyTracker: mockFrequencyTracker, dataTimer: mockTimer, dataClosure: { sample, recordable  in
+                                    audioSample = sample
+                                })
+                            }
+                            
+                            describe("#start()") {
+                                
+                                beforeEach {
+                                    audioRecorder.start()
+                                }
+                                
+                                context("when the timer triggers") {
+                                    
+                                    it("should update the decible power") {
+                                        mockFrequencyTracker.frequency = 0
+                                        mockTimer.tick()
+                                        expect(audioSample?.frequency == 0).to.be.true("\(String(describing: audioSample?.frequency)) was expected to be \(0)")
+                                        
+                                        mockFrequencyTracker.frequency = 1
+                                        mockTimer.tick()
+                                        expect(audioSample?.frequency == 1).to.be.true()
+                                    }
+                                }
+                            }
+                            describe("#stop()") {
+                                
+                                beforeEach {
+                                    audioRecorder.stop()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
-    
+    static var allTests = [("testSpec", testSpec),]
 }
+
+
+
