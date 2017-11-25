@@ -19,13 +19,15 @@ public struct AudioRecorder {
     private let dataTimer: TimerType?
     private let powerTracker: AudioPowerTracker?
     private let frequencyTracker: AudioFrequencyTracker?
+    private let amplitudeTracker: AudioAmplitudeTracker?
     
-    init(recordable: AudioRecordable, powerTracker: AudioPowerTracker? = nil, frequencyTracker: AudioFrequencyTracker? = nil, dataTimer: TimerType? = nil, dataClosure: AudioRecorderDataClosure? = nil) {
+    init(recordable: AudioRecordable, powerTracker: AudioPowerTracker? = nil, frequencyTracker: AudioFrequencyTracker? = nil,  amplitudeTracker: AudioAmplitudeTracker? = nil, dataTimer: TimerType? = nil, dataClosure: AudioRecorderDataClosure? = nil) {
         self._recordable = recordable
         self.dataClosure = dataClosure ?? {_,_ in }
         self.dataTimer = dataTimer
         self.powerTracker = powerTracker
         self.frequencyTracker = frequencyTracker
+        self.amplitudeTracker = amplitudeTracker
     }
     
     func start() {
@@ -42,6 +44,9 @@ public struct AudioRecorder {
     
     private func newDataSample() -> AudioSample {
         // Ampiltude
+        let amplitude = self.amplitudeTracker?.amplitude
+        let leftAmplitude = self.amplitudeTracker?.leftAmplitude
+        let rightAmplitude = self.amplitudeTracker?.rightAmplitude
         
         // Fequency
         let frequency = self.frequencyTracker?.frequency
@@ -52,7 +57,7 @@ public struct AudioRecorder {
         // Recording
         let time = _recordable.currentTime
         
-        return AudioSample(time: time, frequency: frequency, power: power)
+        return AudioSample(time: time, amplitude: amplitude, rightAmplitude: rightAmplitude, leftAmplitude: leftAmplitude, frequency: frequency, power: power)
     }
     
     func stop() {

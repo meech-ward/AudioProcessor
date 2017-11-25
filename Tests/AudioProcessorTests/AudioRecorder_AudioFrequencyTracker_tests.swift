@@ -39,7 +39,7 @@ class AudioRecorder_AudioFrequencyTracker_tests: XCTestCase {
                             
                             
                             
-                            it("should pass in the recordable's initial decible power") {
+                            it("should pass in the recordable's initial frequency") {
                                 mockFrequencyTracker.frequency = 0
                                 audioRecorder.start()
                                 expect(audioSample?.frequency == 0).to.be.true()
@@ -70,7 +70,7 @@ class AudioRecorder_AudioFrequencyTracker_tests: XCTestCase {
                                 
                                 context("when the timer triggers") {
                                     
-                                    it("should update the decible power") {
+                                    it("should update the frequency power") {
                                         mockFrequencyTracker.frequency = 0
                                         mockTimer.tick()
                                         expect(audioSample?.frequency == 0).to.be.true("\(String(describing: audioSample?.frequency)) was expected to be \(0)")
