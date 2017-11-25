@@ -3,7 +3,7 @@ import Observe
 import Focus
 @testable import AudioProcessor
 
-class MockAudioPowerTracker: AudioPowerTracker {
+fileprivate class MockAudioPowerTracker: AudioPowerTracker {
     
     var decibelPower: Float = 0;
     
