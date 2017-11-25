@@ -14,7 +14,6 @@ class MockRecordable: AudioRecordable {
     
     var started = false
     var stopped = false
-    var decibelPower: Float = 0;
     
     func start() {
         started = true

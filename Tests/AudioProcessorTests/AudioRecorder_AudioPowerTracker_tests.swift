@@ -3,6 +3,17 @@ import Observe
 import Focus
 @testable import AudioProcessor
 
+class MockAudioPowerTracker: AudioPowerTracker {
+    
+    var decibelPower: Float = 0;
+    
+    func averageDecibelPower(forChannel channelNumber: Int) -> Float {
+        return decibelPower
+    }
+    
+    
+}
+
 /// Tests for the Audio Recorder Object when initialized with an AudioPowerTracker
 class AudioRecorder_AudioPower_tests: XCTestCase {
     
@@ -15,27 +26,32 @@ class AudioRecorder_AudioPower_tests: XCTestCase {
             
             context("when initialized with an AudioRecordable") {
                 
+                context("when initialized with an AudioPowerTracker") {
+                    
                 context("when initialized with an audio data closure") {
                     
                     var audioRecorder: AudioRecorder!
                     var mockRecordable: MockRecordable!
                     var audioSample: AudioSample?
-                    var passedInRecordable: AudioRecordable?
+                    var mockPowerTracker: MockAudioPowerTracker!
                     beforeEach {
+                        mockPowerTracker = MockAudioPowerTracker()
                         mockRecordable = MockRecordable()
-                        audioRecorder = AudioRecorder(recordable: mockRecordable) { sample, recordable in
+                        audioRecorder = AudioRecorder(recordable: mockRecordable, powerTracker: mockPowerTracker) { sample, recordable in
                             audioSample = sample
-                            passedInRecordable = recordable
                         }
                     }
                     
                     describe("#start()") {
+                        
+                        
+                        
                         it("should pass in the recordable's initial decible power") {
-                            mockRecordable.decibelPower = 0
+                            mockPowerTracker.decibelPower = 0
                             audioRecorder.start()
                             expect(audioSample?.power == 0).to.be.true()
                             
-                            mockRecordable.decibelPower = 1
+                            mockPowerTracker.decibelPower = 1
                             audioRecorder.start()
                             expect(audioSample?.power == 1).to.be.true()
                         }
@@ -47,29 +63,39 @@ class AudioRecorder_AudioPower_tests: XCTestCase {
                         beforeEach {
                             mockTimer = MockTimer()
                             mockRecordable = MockRecordable()
-                            audioRecorder = AudioRecorder(recordable: mockRecordable, dataTimer: mockTimer, dataClosure: { sample, recordable  in
+                            mockPowerTracker = MockAudioPowerTracker()
+                            audioRecorder = AudioRecorder(recordable: mockRecordable, powerTracker: mockPowerTracker, dataTimer: mockTimer, dataClosure: { sample, recordable  in
                                 audioSample = sample
                             })
                         }
                         
                         describe("#start()") {
                             
+                            beforeEach {
+                                audioRecorder.start()
+                            }
+                            
                             context("when the timer triggers") {
                                 
                                 it("should update the decible power") {
-                                    mockRecordable.decibelPower = 0
+                                    mockPowerTracker.decibelPower = 0
                                     mockTimer.tick()
-                                    expect(audioSample?.power == 0).to.be.true()
+                                    expect(audioSample?.power == 0).to.be.true("\(String(describing: audioSample?.power)) was expected to be \(0)")
                                     
-                                    mockRecordable.decibelPower = 1
+                                    mockPowerTracker.decibelPower = 1
                                     mockTimer.tick()
                                     expect(audioSample?.power == 1).to.be.true()
                                 }
                             }
                         }
                         describe("#stop()") {
+                            
+                            beforeEach {
+                                audioRecorder.stop()
+                            }
                         }
                     }
+                }
                 }
             }
         }

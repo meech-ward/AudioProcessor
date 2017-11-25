@@ -82,8 +82,12 @@ class AudioRecorder_AudioRecordable_Tests: XCTestCase {
                         
                         
                         describe("#start()") {
-                            it ("should start the timer") {
+                            
+                            beforeEach {
                                 audioRecorder.start()
+                            }
+                            
+                            it ("should start the timer") {
                                 expect(mockTimer.started).to.be.true()
                             }
                             
@@ -102,8 +106,12 @@ class AudioRecorder_AudioRecordable_Tests: XCTestCase {
                         }
                         
                         describe("#stop()") {
-                            it ("Should stop the timer") {
+                            
+                            beforeEach {
                                 audioRecorder.stop()
+                            }
+                            
+                            it ("Should stop the timer") {
                                 expect(mockTimer.stopped).to.be.true()
                             }
                         }
