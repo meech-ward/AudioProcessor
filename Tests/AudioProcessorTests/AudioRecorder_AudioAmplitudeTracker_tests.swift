@@ -51,27 +51,17 @@ class AudioRecorder_AudioAmplitudeTracker_tests: XCTestCase {
                         
                         describe("#start()") {
                             
-                            func itShouldPassInInitial(thing: String, setter: @escaping ((Double) -> (Void)), getter: @escaping (() -> (Double?))) {
-                                it("the sample should pass in the initial " + thing) {
-                                    
-                                    func testWithValue(_ expectedValue: Double) {
-                                        setter(expectedValue)
-                                        audioRecorder.start()
-                                        let value = getter()
-                                        expect(expectedValue == value).to.be.true("expected \(String(describing: value) ) to be \(expectedValue)")
-                                    }
-                                    
-                                    testWithValue(0)
-                                    testWithValue(1)
-                                    testWithValue(2)
-                                }
+                            
+                            
+                            func itShouldPassInInitial(_ thing: String, setter: @escaping ((Double) -> (Void)), getter: @escaping (() -> (Double?))) {
+                                itShouldCheckValue(thing: thing, inbetweenFunction: audioRecorder.start, setter: setter, getter: getter)
                             }
                             
-                            itShouldPassInInitial(thing: "amplitude", setter: mockAmplitudeTracker.setAmplitude, getter: { audioSample?.amplitude })
+                            itShouldPassInInitial("amplitude", setter: mockAmplitudeTracker.setAmplitude, getter: { audioSample?.amplitude })
                             
-                            itShouldPassInInitial(thing: "left amplitude", setter: { mockAmplitudeTracker.leftAmplitude = $0 }, getter: { audioSample?.leftAmplitude })
+                            itShouldPassInInitial("left amplitude", setter: { mockAmplitudeTracker.leftAmplitude = $0 }, getter: { audioSample?.leftAmplitude })
                             
-                            itShouldPassInInitial(thing: "right amplitude", setter: { mockAmplitudeTracker.rightAmplitude = $0 }, getter: { audioSample?.rightAmplitude })
+                            itShouldPassInInitial("right amplitude", setter: { mockAmplitudeTracker.rightAmplitude = $0 }, getter: { audioSample?.rightAmplitude })
                         }
                         
                         context("when initialized with a Timer") {
@@ -94,27 +84,15 @@ class AudioRecorder_AudioAmplitudeTracker_tests: XCTestCase {
                                 
                                 context("when the timer triggers") {
                                     
-                                    func itShouldUpdateThe(thing: String, setter: @escaping ((Double) -> (Void)), getter: @escaping (() -> (Double?))) {
-                                        it("the sample should pass in the updated " + thing) {
-                                            
-                                            func testWithValue(_ expectedValue: Double) {
-                                                setter(expectedValue)
-                                                mockTimer.tick()
-                                                let value = getter()
-                                                expect(expectedValue == value).to.be.true("expected \(String(describing: value) ) to be \(expectedValue)")
-                                            }
-                                            
-                                            testWithValue(0)
-                                            testWithValue(1)
-                                            testWithValue(2)
-                                        }
+                                    func itShouldUpdateThe(_ thing: String, setter: @escaping ((Double) -> (Void)), getter: @escaping (() -> (Double?))) {
+                                        itShouldCheckValue(thing: thing, inbetweenFunction: mockTimer.tick, setter: setter, getter: getter)
                                     }
                                     
-                                    itShouldUpdateThe(thing: "amplitude", setter: mockAmplitudeTracker.setAmplitude, getter: { audioSample?.amplitude })
+                                    itShouldUpdateThe("amplitude", setter: mockAmplitudeTracker.setAmplitude, getter: { audioSample?.amplitude })
                                     
-                                    itShouldUpdateThe(thing: "left amplitude", setter: { mockAmplitudeTracker.leftAmplitude = $0 }, getter: { audioSample?.leftAmplitude })
+                                    itShouldUpdateThe("left amplitude", setter: { mockAmplitudeTracker.leftAmplitude = $0 }, getter: { audioSample?.leftAmplitude })
                                     
-                                    itShouldUpdateThe(thing: "right amplitude", setter: { mockAmplitudeTracker.rightAmplitude = $0 }, getter: { audioSample?.rightAmplitude })
+                                    itShouldUpdateThe("right amplitude", setter: { mockAmplitudeTracker.rightAmplitude = $0 }, getter: { audioSample?.rightAmplitude })
                                 }
                             }
                             describe("#stop()") {
@@ -133,5 +111,19 @@ class AudioRecorder_AudioAmplitudeTracker_tests: XCTestCase {
 }
 
 
-
+func itShouldCheckValue(thing: String, inbetweenFunction: @escaping () -> (Void), setter: @escaping ((Double) -> (Void)), getter: @escaping (() -> (Double?))) {
+    it("the sample should pass in the initial " + thing) {
+        
+        func testWithValue(_ expectedValue: Double) {
+            setter(expectedValue)
+            inbetweenFunction()
+            let value = getter()
+            expect(expectedValue == value).to.be.true("expected \(String(describing: value) ) to be \(expectedValue)")
+        }
+        
+        testWithValue(0)
+        testWithValue(1)
+        testWithValue(2)
+    }
+}
 
