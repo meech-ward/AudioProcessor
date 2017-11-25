@@ -11,32 +11,35 @@ typealias AudioRecorderDataClosure = ((_ audioSample: AudioSample, _ audioRecord
 
 public struct AudioRecorder {
     
-    private let recordable: AudioRecordable
+    public var recordable: AudioRecordable {
+        return _recordable
+    }
+    private let _recordable: AudioRecordable
     private let dataClosure: AudioRecorderDataClosure
     private let dataTimer: TimerType?
     
-    init(recordable: AudioRecordable, dataTimer: TimerType? = nil, dataClosure: @escaping AudioRecorderDataClosure = {_,_ in }) {
-        self.recordable = recordable
-        self.dataClosure = dataClosure
+    init(recordable: AudioRecordable, dataTimer: TimerType? = nil, dataClosure: AudioRecorderDataClosure? = nil) {
+        self._recordable = recordable
+        self.dataClosure = dataClosure ?? {_,_ in }
         self.dataTimer = dataTimer
     }
     
     func start() {
-        recordable.start()
+        _recordable.start()
         sendNewDataSample()
         self.dataTimer?.start(self.sendNewDataSample)
     }
     
     /// Create an audio sample and send it to the data closure
     func sendNewDataSample() {
-        let power = recordable.averageDecibelPower(forChannel: 0)
-        let time = recordable.currentTime
+        let power = Float(0);//_recordable.averageDecibelPower(forChannel: 0)
+        let time = _recordable.currentTime
         let sample = AudioSample(time: time, power: power)
-        self.dataClosure(sample, recordable)
+        self.dataClosure(sample, _recordable)
     }
     
     func stop() {
-        recordable.stop()
+        _recordable.stop()
         self.dataTimer?.stop()
     }
     
