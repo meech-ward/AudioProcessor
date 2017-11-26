@@ -41,7 +41,7 @@ struct AudioProcessor {
         for i in lastPeakIndex..<samples.count {
             let sample = samples[i]
 
-            if (sample.amplitude! == smallestSample.amplitude!)  {
+            if (sample.amplitude! < averageAmplitudeChanges.negative)  {
                 end = sample.time
                 break
             }

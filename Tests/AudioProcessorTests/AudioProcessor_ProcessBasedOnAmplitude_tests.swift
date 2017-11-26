@@ -125,6 +125,14 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                         self.expectSamples(samples, toHaveStartTime: samples[5].time, andEndTime: samples[12].time)
                     }
                 }
+                
+                context("given some samples") {
+                    it("should") {
+                        let amplitudes = [0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0.1, 0.02, 0.04, 0.1]
+                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
+                        self.expectSamples(samples, toHaveStartTime: samples[5].time, andEndTime: samples[12].time)
+                    }
+                }
             }
         }
     }
