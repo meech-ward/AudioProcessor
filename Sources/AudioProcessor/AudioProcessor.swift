@@ -13,7 +13,7 @@ struct AudioProcessor {
         self.samples = samples
     }
     
-    func processBasedOnAmplitude() throws -> AudioTimeData {
+    private func makeSureSamplesHaveAmplitude() throws {
         if samples.isEmpty {
             throw AudioProcessorError.noData
         }
@@ -23,6 +23,10 @@ struct AudioProcessor {
                 throw AudioProcessorError.noAmplitudeData
             }
         }
+    }
+    
+    func processBasedOnAmplitude(sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil) throws -> AudioTimeData {
+        try makeSureSamplesHaveAmplitude()
         
         var start: TimeInterval = samples.first!.time
         var end: TimeInterval = samples.last!.time
@@ -34,18 +38,52 @@ struct AudioProcessor {
             return AudioTimeData(startTime: start, endTime: end)
         }
         
-        // IF there's no significant noise
-        let averageAmapliutes = self.averageAmplitudes()
+        // Peak
+        let lastPeakIndex = self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
         
+        var startSampleIndex = 0
+        var endSampleIndex = samples.count - 1
+        
+        // Before Peak
+        if let seconds = sampleSecondsBeforePeak {
+            let peakSeconds = samples[lastPeakIndex].time
+            let secondsToStartAt = peakSeconds - seconds
+            
+            if secondsToStartAt > 0 {
+                for (index, sample) in samples.enumerated() {
+                    if sample.time > secondsToStartAt {
+                        startSampleIndex = max(0, index-1)
+                        break
+                    }
+                }
+            }
+        }
+        
+        // After Peak
+        if let seconds = sampleSecondsAfterPeak {
+            let peakSeconds = samples[lastPeakIndex].time
+            let secondsToEndAt = peakSeconds + seconds
+            
+            if secondsToEndAt < samples.last!.time {
+                for (index, sample) in samples.enumerated().reversed() {
+                    if sample.time < secondsToEndAt {
+                        endSampleIndex = min(samples.count-1, index+1)
+                        break
+                    }
+                }
+            }
+        }
+        
+        // IF there's no significant noise
+        let averageAmapliutes = self.averageAmplitudes(startSampleIndex: startSampleIndex, endSampleIndex: endSampleIndex)
         if averageAmapliutes*2 > biggestSample.amplitude! {
             return AudioTimeData(startTime: start, endTime: end)
         }
         
-        let lastPeakIndex = self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
-        let averageAmplitudeChanges = self.averageAmplitudeChangeBetweenSamples()
+        let averageAmplitudeChanges = self.averageAmplitudeChangeBetweenSamples(startIndex: startSampleIndex, endIndex: endSampleIndex)
         
         // End time
-        for i in lastPeakIndex..<samples.count {
+        for i in lastPeakIndex...endSampleIndex {
             let sample = samples[i]
 
             if (sample.amplitude! < averageAmplitudeChanges.negative)  {
@@ -56,10 +94,9 @@ struct AudioProcessor {
         
 //        var averageChangeBetweenSamples
         // Start Time
-        for i in (0..<lastPeakIndex).reversed() {
+        for i in (startSampleIndex-1..<lastPeakIndex).reversed() {
             let sample = samples[i]
             
-
             if (sample.amplitude! < averageAmplitudeChanges.positive)  {
                 start = samples[i+1].time
                 break
@@ -105,9 +142,13 @@ extension AudioProcessor {
         return lastPeakIndex
     }
     
-    private func averageAmplitudes() -> Double {
+    private func averageAmplitudes(startSampleIndex: Int? = nil, endSampleIndex: Int? = nil) -> Double {
+        let startIndex = startSampleIndex ?? 0
+        let endIndex = endSampleIndex ?? samples.count-1
+        
         var totalAmplitudes = 0.0
-        for sample in samples {
+        for index in startIndex...endIndex {
+            let sample = samples[index]
             totalAmplitudes += sample.amplitude!
         }
         return totalAmplitudes/Double(samples.count)

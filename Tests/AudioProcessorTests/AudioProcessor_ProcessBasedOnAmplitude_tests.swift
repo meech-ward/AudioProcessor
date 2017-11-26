@@ -18,7 +18,7 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                         let processor = AudioProcessor(samples: SampleData.noData())
                         var error: AudioProcessorError?
                         do {
-                            try processor.processBasedOnAmplitude()
+                            _ = try processor.processBasedOnAmplitude()
                         } catch let e {
                             error = e as? AudioProcessorError
                         }
@@ -32,7 +32,7 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                         let processor = AudioProcessor(samples: SampleData.oneSampleInvalidSample())
                         var error: AudioProcessorError?
                         do {
-                            try processor.processBasedOnAmplitude()
+                            _ = try processor.processBasedOnAmplitude()
                         } catch let e {
                             error = e as? AudioProcessorError
                         }
@@ -100,45 +100,37 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                     }
                 }
                 
-                
-                
-                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.5, 1, 1, 1, 0.75, 0.5, 0.25 0, 0]") {
-                    it("should return a good start and end time") {
-                        let amplitudes = [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        self.expectSamples(samples, toHaveStartTime: samples[10].time, andEndTime: samples[18].time)
-                    }
-                }
-                
-                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]") {
-                    it("should same as last but second peak") {
-                        let amplitudes = [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        self.expectSamples(samples, toHaveStartTime: samples[20].time, andEndTime: samples[28].time)
-                    }
-                }
-                
                 context("given some samples") {
-                    it("should") {
-                        let amplitudes = [0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        self.expectSamples(samples, toHaveStartTime: samples[5].time, andEndTime: samples[12].time)
-                    }
-                }
-                
-                context("given some samples") {
-                    it("should") {
-                        let amplitudes = [0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0.1, 0.02, 0.04, 0.1]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        self.expectSamples(samples, toHaveStartTime: samples[5].time, andEndTime: samples[12].time)
+                    it("should find the correct times") {
+                        self.expectAmplitudes([0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 10, andEndIndex: 18)
+                        self.expectAmplitudes([0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 20, andEndIndex: 28)
+                        self.expectAmplitudes([0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 5, andEndIndex: 12)
+                        self.expectAmplitudes([0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0.1, 0.02, 0.04, 0.1], toHaveStartIndex: 5, andEndIndex: 12)
                     }
                 }
                 
                 context("given some samples where the average is close to the peak") {
                     it("should return all the data") {
-                        let amplitudes = [0, 0.1, 0.05, 0.15, 0.05, 0.1, 0.05, 0.1]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        self.expectSamples(samples, toHaveStartTime: samples[0].time, andEndTime: samples.last!.time)
+                        self.expectAmplitudes([0, 0.1, 0.05, 0.15, 0.05, 0.1, 0.05, 0.1], toHaveStartIndex: 0, andEndIndex: 7)
+                    }
+                }
+                
+                context("getting start and end based on distance from peak") {
+                    context("given sample seconds that exceed the audio") {
+                        it("should return data for the entire sample set") {
+                            self.expectAmplitudes([0.0,0.5,1.0,0.5,0.0], toHaveStartIndex: 1, andEndIndex: 3, sampleSecondsBeforePeak: 10.0, sampleSecondsAfterPeak: 10.0)
+                        }
+                    }
+                    context("given some samples") {
+                        it("should return the correct data") {
+                            self.expectAmplitudes([0.0, 1.0, 2.0, 3.0, 4.0,5.0, 1.0, 2.0, 3.0,4.0, 5.0, 1.0, 2.0,3.0, 4.0, 5.0, 1.0, 2.0, 3.0, 4.0, 5.0, 2.0, 1.0, 2.0, 4.0, 5.0, 8.0, 5.0, 0.0], toHaveStartIndex: 23, andEndIndex: 28, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 2.0)
+                            self.expectAmplitudes([0,0,0,1.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.1,0.2,0,0.3,0.4,0.5,0.1,0.2,0.3,0.4,0.2,0.3,0.5,1.0,0.5,1.0,2.0, 1.0, 2.0, 4.0, 5.0, 8.0, 5.0, 0.0], toHaveStartIndex: 36, andEndIndex: 42, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 2.0)
+
+                            self.expectAmplitudes([0.0, 1.0, 2.0, 5.0, 3.0, 2.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1], toHaveStartIndex: 1, andEndIndex: 6, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 4.0)
+                            
+//                            self.expectAmplitudes([0.0, 1.0, 2.0, 5.0, 3.0, 2.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,], toHaveStartIndex: 1, andEndIndex: 6, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 4.0)
+                            
+                        }
                     }
                 }
             }
@@ -146,9 +138,14 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
     }
     static var allTests = [("testSpec", testSpec),]
     
-    func expectSamples(_ samples: [AudioSample], toHaveStartTime start: TimeInterval, andEndTime end: TimeInterval) {
+    func expectAmplitudes(_ amplitudes: [Double], toHaveStartIndex start: Int, andEndIndex end: Int, sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil) {
+        let samples = SampleData.samples(fromAmplitudes: amplitudes)
+        self.expectSamples(samples, toHaveStartTime: samples[start].time, andEndTime: samples[end].time, sampleSecondsBeforePeak: sampleSecondsBeforePeak, sampleSecondsAfterPeak: sampleSecondsAfterPeak)
+    }
+    
+    func expectSamples(_ samples: [AudioSample], toHaveStartTime start: TimeInterval, andEndTime end: TimeInterval, sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil) {
         let processor = AudioProcessor(samples: samples)
-        let timeData = try? processor.processBasedOnAmplitude()
+        let timeData = try? processor.processBasedOnAmplitude(sampleSecondsBeforePeak: sampleSecondsBeforePeak, sampleSecondsAfterPeak: sampleSecondsAfterPeak)
         let expectStartRange = timeData?.startTime == start || timeData?.startTime == start-1 || timeData?.startTime == start+1
         let expectEndRange = timeData?.endTime == end || timeData?.endTime == end-1 || timeData?.endTime == end+1
         expect(expectStartRange).to.be.true("expecting \(start) but instead got \(String(describing: timeData?.startTime))")
