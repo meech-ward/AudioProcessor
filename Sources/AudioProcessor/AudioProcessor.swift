@@ -35,6 +35,7 @@ struct AudioProcessor {
         }
         
         let lastPeakIndex = self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
+        let averageAmplitudeChanges = self.averageAmplitudeChangeBetweenSamples()
         
         // End time
         for i in lastPeakIndex..<samples.count {
@@ -50,8 +51,9 @@ struct AudioProcessor {
         // Start Time
         for i in (0..<lastPeakIndex).reversed() {
             let sample = samples[i]
+            
 
-            if (sample.amplitude! <= smallestSample.amplitude!)  {
+            if (sample.amplitude! < averageAmplitudeChanges.positive)  {
                 start = samples[i+1].time
                 break
             }
