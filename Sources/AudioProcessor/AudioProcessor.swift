@@ -34,6 +34,13 @@ struct AudioProcessor {
             return AudioTimeData(startTime: start, endTime: end)
         }
         
+        // IF there's no significant noise
+        let averageAmapliutes = self.averageAmplitudes()
+        
+        if averageAmapliutes*2 > biggestSample.amplitude! {
+            return AudioTimeData(startTime: start, endTime: end)
+        }
+        
         let lastPeakIndex = self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
         let averageAmplitudeChanges = self.averageAmplitudeChangeBetweenSamples()
         
@@ -96,6 +103,14 @@ extension AudioProcessor {
         }
         
         return lastPeakIndex
+    }
+    
+    private func averageAmplitudes() -> Double {
+        var totalAmplitudes = 0.0
+        for sample in samples {
+            totalAmplitudes += sample.amplitude!
+        }
+        return totalAmplitudes/Double(samples.count)
     }
     
     func averageAmplitudeChangeBetweenSamples() -> (positive: Double, negative: Double) {
