@@ -113,25 +113,27 @@ extension AudioProcessor {
         return totalAmplitudes/Double(samples.count)
     }
     
-    func averageAmplitudeChangeBetweenSamples() -> (positive: Double, negative: Double) {
+    func averageAmplitudeChangeBetweenSamples(startIndex si: Int? = nil, endIndex ei: Int? = nil) -> (positive: Double, negative: Double) {
         if samples.count == 0 {
             return (0, 0)
         }
+        
+        let startIndex = si == nil ? 0 : si!
+        let endIndex = ei == nil ? samples.count-1 : ei!
         
         var totalNegativeChanges = 0
         var totalNegativeAmplitudeChange = 0.0
         var totalPositiveChanges = 0
         var totalPositiveAmplitudeChange = 0.0
-        for (index, currentSample) in samples.enumerated() {
-            if (index == 0) {
+        for index in startIndex...endIndex {
+            if (index == startIndex) {
                 continue
             }
-            let lastSample = samples[index-1]
             
-            guard let currentAmplitude = currentSample.amplitude else {
+            guard let currentAmplitude = samples[index].amplitude else {
                 continue
             }
-            guard let lastAmplitude = lastSample.amplitude else {
+            guard let lastAmplitude = samples[index-1].amplitude else {
                 continue
             }
             

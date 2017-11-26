@@ -93,13 +93,26 @@ class AverageAmplitudeChangeBetweenSamplesTests: XCTestCase {
                 }
                 
                 context("when passed a start and end sample") {
-                    context("given a sample") {
-                        it("should return average") {
-                            self.expectAmplitudes([0.0, 1.0, 2.0, 3.0], toAverageNegativeSamplesTo: 0.0)
-                            self.expectAmplitudes([3.0, 2.0, 1.0, 0.0], toAverageNegativeSamplesTo: 1.0)
-                            self.expectAmplitudes([1.0, 1.0, 1.0, 1.0, 0.0], toAverageNegativeSamplesTo: 1.0)
-                            self.expectAmplitudes([0.0, 0.5, 0.0, 0.5], toAverageNegativeSamplesTo: 0.5)
-                            self.expectAmplitudes([0.0, 1.0, 0.0, 1.5, 0.5, 1.5], toAverageNegativeSamplesTo: 1.0)
+                    
+                    context("Positive Average") {
+                        context("given a sample") {
+                            it("should return average") {
+                                self.expectAmplitudes([0.0, 1.0], startIndex: 0, endIndex: 1, toAveragePositiveSamplesTo: 1.0)
+                                self.expectAmplitudes([0.0, 1.0, 5.0], startIndex: 0, endIndex: 1, toAveragePositiveSamplesTo: 1.0)
+                                self.expectAmplitudes([0.0, 1.0, 5.0], startIndex: 1, endIndex: 2, toAveragePositiveSamplesTo: 4.0)
+                                self.expectAmplitudes([0.0, 1.0, 5.0, 2.0, 4.0, 2.0], startIndex: 2, endIndex: nil, toAveragePositiveSamplesTo: 2.0)
+                            }
+                        }
+                    }
+                    
+                    context("Positive Average") {
+                        context("given a sample") {
+                            it("should return average") {
+                                self.expectAmplitudes([1.0, 0.0], startIndex: 0, endIndex: 1, toAverageNegativeSamplesTo: 1.0)
+                                self.expectAmplitudes([5.0, 1.0, 0.0], startIndex: 1, endIndex: 2, toAverageNegativeSamplesTo: 1.0)
+                                self.expectAmplitudes([5.0, 1.0, 0.0], startIndex: 0, endIndex: 1, toAverageNegativeSamplesTo: 4.0)
+                                self.expectAmplitudes([0.0, 1.0, 5.0, 3.0, 4.0, 2.0], startIndex: 2, endIndex: nil, toAverageNegativeSamplesTo: 2.0)
+                            }
                         }
                     }
                 }
@@ -109,25 +122,25 @@ class AverageAmplitudeChangeBetweenSamplesTests: XCTestCase {
      static var allTests = [("testSpec", testSpec),]
     
     
-    func expectAmplitudes(_ amplitudes: [Double], startIndex: Int = 0, endIndex: Int = 0, toAveragePositiveSamplesTo value: Double) {
+    func expectAmplitudes(_ amplitudes: [Double], startIndex: Int? = nil, endIndex: Int? = nil, toAveragePositiveSamplesTo value: Double) {
         let samples = SampleData.samples(fromAmplitudes: amplitudes)
         let processor = AudioProcessor(samples: samples)
         self.expectProcessor(processor, toAveragePositiveSamplesTo: value, startIndex: startIndex, endIndex: endIndex)
     }
     
-    func expectAmplitudes(_ amplitudes: [Double], startIndex: Int = 0, endIndex: Int = amplitudes.count-1
+    func expectAmplitudes(_ amplitudes: [Double], startIndex: Int? = nil, endIndex: Int? = nil
         , toAverageNegativeSamplesTo value: Double) {
         let samples = SampleData.samples(fromAmplitudes: amplitudes)
         let processor = AudioProcessor(samples: samples)
         self.expectProcessor(processor, toAverageNegativeSamplesTo: value, startIndex: startIndex, endIndex: endIndex)
     }
     
-    func expectProcessor(_ processor: AudioProcessor, toAveragePositiveSamplesTo value: Double, startIndex: Int = 0, endIndex: Int = 0) {
+    func expectProcessor(_ processor: AudioProcessor, toAveragePositiveSamplesTo value: Double, startIndex: Int? = nil, endIndex: Int? = nil) {
         let average = processor.averageAmplitudeChangeBetweenSamples(startIndex: startIndex, endIndex: endIndex)
         expect(average.positive == value).to.be.true("expected average positive to be \(value) instead of \(average.positive)")
     }
     
-    func expectProcessor(_ processor: AudioProcessor, toAverageNegativeSamplesTo value: Double, startIndex: Int = 0, endIndex: Int = 0) {
+    func expectProcessor(_ processor: AudioProcessor, toAverageNegativeSamplesTo value: Double, startIndex: Int? = nil, endIndex: Int? = nil) {
         let average = processor.averageAmplitudeChangeBetweenSamples(startIndex: startIndex, endIndex: endIndex)
         expect(average.negative == value).to.be.true("expected average negative to be \(value) instead of \(average.positive)")
     }
