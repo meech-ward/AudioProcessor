@@ -1,144 +1,12 @@
-import XCTest
-import Observe
-import Focus
+//
+//  SampleData.swift
+//  AudioProcessorTests
+//
+//  Created by Sam Meech-Ward on 2017-11-25.
+//
 @testable import AudioProcessor
-
-/// Tests for the Audio Recorder Object when initialized with an Audio Recordable
-class AudioProcessorTests: XCTestCase {
-    
-    override class func setUp() {
-        Focus.defaultReporter().failBlock = XCTFail
-    }
-    
-    func testSpec() {
-        describe("AudioProcessor") {
-            describe("#processBasedOnAmplitude()") {
-                context("given no data") {
-                    it("should throw an error") {
-                        let processor = AudioProcessor(samples: SampleData.noData())
-                        var error: AudioProcessorError?
-                        do {
-                            try processor.processBasedOnAmplitude()
-                        } catch let e {
-                            error = e as? AudioProcessorError
-                        }
-                        expect(error != nil).to.be.true()
-                        expect(error == AudioProcessorError.noData).to.be.true()
-                    }
-                }
-                
-                context("given sample with no amplitude") {
-                    it("should throw an error") {
-                        let processor = AudioProcessor(samples: SampleData.oneSampleInvalidSample())
-                        var error: AudioProcessorError?
-                        do {
-                            try processor.processBasedOnAmplitude()
-                        } catch let e {
-                            error = e as? AudioProcessorError
-                        }
-                        expect(error != nil).to.be.true()
-                        expect(error == AudioProcessorError.noAmplitudeData).to.be.true()
-                    }
-                }
-                
-                context("given single sample with 0 amplitude") {
-                    it("should return start and end time as the sample time") {
-                        let samples = SampleData.oneSampleValidSample()
-                        let processor = AudioProcessor(samples: samples)
-                        let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[0].time).to.be.true()
-                        expect(timeData?.endTime == samples[0].time).to.be.true()
-                    }
-                }
-                
-                context("given 2 samples with 0 amplitude") {
-                    it("should return start time of the first sample and end time of the second sample") {
-                        let samples = SampleData.twoSampleValidSample()
-                        let processor = AudioProcessor(samples: samples)
-                        let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[0].time).to.be.true()
-                        expect(timeData?.endTime == samples[1].time).to.be.true()
-                    }
-                }
-                
-                func expectSamples(_ samples: [AudioSample], toHaveStartTime start: TimeInterval, andEndTime end: TimeInterval) {
-                    let processor = AudioProcessor(samples: samples)
-                    let timeData = try? processor.processBasedOnAmplitude()
-                    expect(timeData?.startTime == start).to.be.true("expecting \(start) but instead got \(String(describing: timeData?.startTime))")
-                    expect(timeData?.endTime == end).to.be.true("expecting \(end) but instead got \(String(describing: timeData?.endTime))")
-                }
-                
-                context("given many samples with 0 amplitude") {
-                    it("should return start time of the first sample and end time of the last sample") {
-                        let amplitudes = [0.0, 0, 0, 0, 0]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        expectSamples(samples, toHaveStartTime: samples[0].time, andEndTime: samples.last!.time)
-                    }
-                }
-                
-                context("given some samples with 0 amplitude and an amplitude of 1 in the middle") {
-                    it("should return start time of the 1 sample and end time of the 0 after that sample") {
-                        let samples = SampleData.some0SamplesWith1InTheMiddle()
-                        let processor = AudioProcessor(samples: samples)
-                        let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[2].time).to.be.true()
-                        expect(timeData?.endTime == samples[3].time).to.be.true()
-                    }
-                }
-                
-                context("given some samples with 0 amplitude and some amplitudes of 1 together in the middle") {
-                    it("should return start time of the 1st 1 sample and end time of the 0 after all the one samples") {
-                        let samples = SampleData.some0SamplesWith1sInTheMiddle()
-                        let processor = AudioProcessor(samples: samples)
-                        let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[2].time).to.be.true()
-                        expect(timeData?.endTime == samples[5].time).to.be.true()
-                    }
-                }
-                
-                context("given some samples that go [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0]") {
-                    it("should return start time of the 1st 1 sample in the second group and end time of the 0 after all the one samples") {
-                        let samples = SampleData.some0SamplesWith1sInTheMiddleAndEnd()
-                        let processor = AudioProcessor(samples: samples)
-                        let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[7].time).to.be.true()
-                        expect(timeData?.endTime == samples[10].time).to.be.true()
-                    }
-                }
-                
-                
-                
-                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.5, 1, 1, 1, 0.75, 0.5, 0.25 0, 0]") {
-                    it("should return a good start and end time") {
-                        let amplitudes = [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        expectSamples(samples, toHaveStartTime: samples[10].time, andEndTime: samples[18].time)
-                    }
-                }
-                
-                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]") {
-                    it("should same as last but second peak") {
-                        let amplitudes = [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        expectSamples(samples, toHaveStartTime: samples[20].time, andEndTime: samples[28].time)
-                    }
-                }
-                
-                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]") {
-                    it("should same as last but second peak") {
-                        let amplitudes = [0, 0.25, 0.15, 0.25, 0.15, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
-                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
-                        expectSamples(samples, toHaveStartTime: samples[5].time, andEndTime: samples[12].time)
-                    }
-                }
-            }
-        }
-    }
-    static var allTests = [("testSpec", testSpec),]
-}
-
-
-fileprivate struct SampleData {
+import Foundation
+struct SampleData {
     
     static func noData() -> [AudioSample] {
         return []
@@ -273,10 +141,10 @@ fileprivate struct SampleData {
     
     func marSayingBoobs() {
         let intervals = [0.0, 0.0, 0.10000000000000001, 0.29999999999999999, 0.29999999999999999, 0.40000000000000002, 0.5, 0.59999999999999998, 0.80000000000000004, 0.80000000000000004, 0.90000000000000002, 1.0, 1.1000000000000001, 1.3, 1.3, 1.3999999999999999, 1.6000000000000001, 1.6000000000000001, 1.7, 1.8, 1.8999999999999999, 2.1000000000000001, 2.1000000000000001, 2.2000000000000002, 2.2999999999999998, 2.3999999999999999, 2.6000000000000001, 2.6000000000000001, 2.7000000000000002, 2.7999999999999998, 2.7999999999999998, 3.0, 3.1000000000000001, 3.2000000000000002, 3.3999999999999999, 3.3999999999999999, 3.5, 3.6000000000000001, 3.7000000000000002, 3.8999999999999999, 3.8999999999999999, 4.0, 4.0999999999999996, 4.2000000000000002, 4.4000000000000004, 4.4000000000000004, 4.5, 4.7000000000000002, 4.7000000000000002, 4.7999999999999998, 4.9000000000000004, 5.0, 5.2000000000000002, 5.2000000000000002, 5.2999999999999998, 5.4000000000000004, 5.5, 5.7000000000000002, 5.7000000000000002, 5.7999999999999998, 6.0]
-
+        
         
         let frequencies = [0.0, 200.0, 367.90704345703125, 100.42488098144531, 193.59616088867188, 119.31085205078125, 119.51390838623047, 119.83512878417969, 119.90144348144531, 119.57801818847656, 119.30833435058594, 120.55226135253906, 60.330291748046875, 119.39665222167969, 119.76951599121094, 48.320079803466797, 100.458740234375, 262.43856811523438, 120.39199829101562, 120.27783966064453, 119.30230712890625, 120.41852569580078, 120.23991394042969, 119.94452667236328, 120.36489868164062, 120.37802886962891, 119.47701263427734, 118.76118469238281, 119.89369964599609, 59.602737426757812, 119.51557922363281, 135.69035339355469, 171.53596496582031, 186.15182495117188, 196.83805847167969, 198.83473205566406, 203.86555480957031, 201.33146667480469, 202.49249267578125, 202.48066711425781, 56.269924163818359, 874.36328125, 120.95193481445312, 119.57669830322266, 119.56356048583984, 120.47490692138672, 120.16009521484375, 119.43593597412109, 119.72219085693359, 119.90937042236328, 119.67910003662109, 121.42462158203125, 40.071651458740234, 60.073284149169922, 119.59596252441406, 1794.7149658203125, 121.62599945068359, 1578.060302734375, 120.12117004394531, 60.572616577148438, 119.02166748046875]
-
+        
         
         let amplitudes = [0.0, 0.067431606942973829, 0.039174581631098923, 0.03246514842548677, 0.018793626145418848, 0.009892249276954982, 0.006743666324770612, 0.0062465547832967448, 0.0059635874278396823, 0.0076842542502656942, 0.010276722707238978, 0.011600451168933898, 0.0070076675983977727, 0.010667126989361866, 0.0053726079400147203, 0.019696048123953789, 0.020269549511264636, 0.0096825502663670619, 0.0047164918149051873, 0.0043451260545080798, 0.0037029108161453004, 0.0034157837643035648, 0.0028704769722852361, 0.0028018892325065818, 0.0026434198809197791, 0.002354903135530073, 0.0017338861156070034, 0.0016889287637721661, 0.0019588157789394221, 0.0018078688166311789, 0.0018188284789691543, /*Start*/ 0.20132371529238199, 0.26668136011383176, 0.34583864178102142, 0.31152933692551621, 0.27699016315823261, 0.2208974071638416, 0.25009065359257915, 0.19134182427845589, 0.071367137411307388, 0.022042321033706749, 0.0064204632169648215, 0.0042971978437616057, 0.0042833460185806973, 0.0032468684150950135, 0.0027353497307838811, 0.0040922927079195441, 0.0037579137705410328, 0.004081337820029252, 0.003341889143607332, 0.0034853876382580362, 0.0029281575686504265, 0.0019156551011584885, 0.0016532396027065506, 0.0088651740426820211, 0.012264065152539068, 0.019716169292850694, 0.0078198281495795892, 0.0037619552581865229, 0.0036939766720777527, 0.0035968163324589983]
         
@@ -303,5 +171,3 @@ fileprivate struct SampleData {
         return samples
     }
 }
-
-

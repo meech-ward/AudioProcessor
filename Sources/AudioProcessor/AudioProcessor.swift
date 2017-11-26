@@ -39,24 +39,19 @@ struct AudioProcessor {
         // End time
         for i in lastPeakIndex..<samples.count {
             let sample = samples[i]
-            guard let amplitude = sample.amplitude else {
-                throw AudioProcessorError.noAmplitudeData
-            }
-            
-            if (amplitude == smallestSample.amplitude!)  {
+
+            if (sample.amplitude! == smallestSample.amplitude!)  {
                 end = sample.time
                 break
             }
         }
         
+//        var averageChangeBetweenSamples
         // Start Time
         for i in (0..<lastPeakIndex).reversed() {
             let sample = samples[i]
-            guard let amplitude = sample.amplitude else {
-                throw AudioProcessorError.noAmplitudeData
-            }
-            
-            if (amplitude == smallestSample.amplitude!)  {
+
+            if (sample.amplitude! <= smallestSample.amplitude!)  {
                 start = samples[i+1].time
                 break
             }
@@ -99,5 +94,55 @@ extension AudioProcessor {
         }
         
         return lastPeakIndex
+    }
+    
+    func averageAmplitudeChangeBetweenSamples() -> (positive: Double, negative: Double) {
+        if samples.count == 0 {
+            return (0, 0)
+        }
+        
+        var totalNegativeChanges = 0
+        var totalNegativeAmplitudeChange = 0.0
+        var totalPositiveChanges = 0
+        var totalPositiveAmplitudeChange = 0.0
+        for (index, currentSample) in samples.enumerated() {
+            if (index == 0) {
+                continue
+            }
+            let lastSample = samples[index-1]
+            
+            guard let currentAmplitude = currentSample.amplitude else {
+                continue
+            }
+            guard let lastAmplitude = lastSample.amplitude else {
+                continue
+            }
+            
+            let difference = currentAmplitude - lastAmplitude
+            
+            if difference < 0 {
+                totalNegativeChanges += 1
+                totalNegativeAmplitudeChange += (difference*(-1))
+            } else if difference > 0 {
+                totalPositiveChanges += 1
+                totalPositiveAmplitudeChange += difference
+            }
+            
+        }
+        
+        var positiveAverage: Double
+        if Double(totalPositiveChanges) == 0 {
+            positiveAverage = 0
+        } else {
+           positiveAverage = totalPositiveAmplitudeChange/Double(totalPositiveChanges)
+        }
+        
+        var negativeAverage: Double
+        if Double(totalNegativeChanges) == 0 {
+            negativeAverage = 0
+        } else {
+            negativeAverage = totalNegativeAmplitudeChange/Double(totalNegativeChanges)
+        }
+        return (positiveAverage, negativeAverage)
     }
 }
