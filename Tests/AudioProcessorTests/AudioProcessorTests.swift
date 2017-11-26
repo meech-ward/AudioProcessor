@@ -13,7 +13,7 @@ class AudioProcessorTests: XCTestCase {
     func testSpec() {
         describe("AudioProcessor") {
             describe("#processBasedOnAmplitude()") {
-                describe("given no data") {
+                context("given no data") {
                     it("should throw an error") {
                         let processor = AudioProcessor(samples: SampleData.noData())
                         var error: AudioProcessorError?
@@ -27,9 +27,9 @@ class AudioProcessorTests: XCTestCase {
                     }
                 }
                 
-                describe("given sample with no amplitude") {
+                context("given sample with no amplitude") {
                     it("should throw an error") {
-                        let processor = AudioProcessor(samples: SampleData.oneSample())
+                        let processor = AudioProcessor(samples: SampleData.oneSampleInvalidSample())
                         var error: AudioProcessorError?
                         do {
                             try processor.processBasedOnAmplitude()
@@ -38,6 +38,97 @@ class AudioProcessorTests: XCTestCase {
                         }
                         expect(error != nil).to.be.true()
                         expect(error == AudioProcessorError.noAmplitudeData).to.be.true()
+                    }
+                }
+                
+                context("given single sample with 0 amplitude") {
+                    it("should return start and end time as the sample time") {
+                        let samples = SampleData.oneSampleValidSample()
+                        let processor = AudioProcessor(samples: samples)
+                        let timeData = try? processor.processBasedOnAmplitude()
+                        expect(timeData?.startTime == samples[0].time).to.be.true()
+                        expect(timeData?.endTime == samples[0].time).to.be.true()
+                    }
+                }
+                
+                context("given 2 samples with 0 amplitude") {
+                    it("should return start time of the first sample and end time of the second sample") {
+                        let samples = SampleData.twoSampleValidSample()
+                        let processor = AudioProcessor(samples: samples)
+                        let timeData = try? processor.processBasedOnAmplitude()
+                        expect(timeData?.startTime == samples[0].time).to.be.true()
+                        expect(timeData?.endTime == samples[1].time).to.be.true()
+                    }
+                }
+                
+                func expectSamples(_ samples: [AudioSample], toHaveStartTime start: TimeInterval, andEndTime end: TimeInterval) {
+                    let processor = AudioProcessor(samples: samples)
+                    let timeData = try? processor.processBasedOnAmplitude()
+                    expect(timeData?.startTime == start).to.be.true("expecting \(start) but instead got \(String(describing: timeData?.startTime))")
+                    expect(timeData?.endTime == end).to.be.true("expecting \(end) but instead got \(String(describing: timeData?.endTime))")
+                }
+                
+                context("given many samples with 0 amplitude") {
+                    it("should return start time of the first sample and end time of the last sample") {
+                        let amplitudes = [0.0, 0, 0, 0, 0]
+                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
+                        expectSamples(samples, toHaveStartTime: samples[0].time, andEndTime: samples.last!.time)
+                    }
+                }
+                
+                context("given some samples with 0 amplitude and an amplitude of 1 in the middle") {
+                    it("should return start time of the 1 sample and end time of the 0 after that sample") {
+                        let samples = SampleData.some0SamplesWith1InTheMiddle()
+                        let processor = AudioProcessor(samples: samples)
+                        let timeData = try? processor.processBasedOnAmplitude()
+                        expect(timeData?.startTime == samples[2].time).to.be.true()
+                        expect(timeData?.endTime == samples[3].time).to.be.true()
+                    }
+                }
+                
+                context("given some samples with 0 amplitude and some amplitudes of 1 together in the middle") {
+                    it("should return start time of the 1st 1 sample and end time of the 0 after all the one samples") {
+                        let samples = SampleData.some0SamplesWith1sInTheMiddle()
+                        let processor = AudioProcessor(samples: samples)
+                        let timeData = try? processor.processBasedOnAmplitude()
+                        expect(timeData?.startTime == samples[2].time).to.be.true()
+                        expect(timeData?.endTime == samples[5].time).to.be.true()
+                    }
+                }
+                
+                context("given some samples that go [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0]") {
+                    it("should return start time of the 1st 1 sample in the second group and end time of the 0 after all the one samples") {
+                        let samples = SampleData.some0SamplesWith1sInTheMiddleAndEnd()
+                        let processor = AudioProcessor(samples: samples)
+                        let timeData = try? processor.processBasedOnAmplitude()
+                        expect(timeData?.startTime == samples[7].time).to.be.true()
+                        expect(timeData?.endTime == samples[10].time).to.be.true()
+                    }
+                }
+                
+                
+                
+                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.5, 1, 1, 1, 0.75, 0.5, 0.25 0, 0]") {
+                    it("should return a good start and end time") {
+                        let amplitudes = [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
+                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
+                        expectSamples(samples, toHaveStartTime: samples[10].time, andEndTime: samples[18].time)
+                    }
+                }
+                
+                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]") {
+                    it("should same as last but second peak") {
+                        let amplitudes = [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
+                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
+                        expectSamples(samples, toHaveStartTime: samples[20].time, andEndTime: samples[28].time)
+                    }
+                }
+                
+                context("given some samples that go [0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]") {
+                    it("should same as last but second peak") {
+                        let amplitudes = [0, 0.25, 0.15, 0.25, 0.15, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0]
+                        let samples = SampleData.samples(fromAmplitudes: amplitudes)
+                        expectSamples(samples, toHaveStartTime: samples[5].time, andEndTime: samples[12].time)
                     }
                 }
             }
@@ -53,8 +144,30 @@ fileprivate struct SampleData {
         return []
     }
     
-    static func oneSample() -> [AudioSample] {
+    static func oneSampleInvalidSample() -> [AudioSample] {
         return [AudioSample(time: 0)]
+    }
+    
+    static func oneSampleValidSample() -> [AudioSample] {
+        return [AudioSample(time: 0, amplitude: 0, rightAmplitude: 0, leftAmplitude: 0, frequency: 0)]
+    }
+    static func twoSampleValidSample() -> [AudioSample] {
+        return self.samplesFromDatas(intervals: [0, 1], frequencies: [0, 0], amplitudes: [0, 0], leftAmplitudes: [0,0], rightAmplitudes: [0,0])
+    }
+    
+    static func some0SamplesWith1InTheMiddle() -> [AudioSample] {
+        return self.samplesFromDatas(intervals: [0, 1, 2, 3, 4], frequencies: [0, 0, 0, 0, 0], amplitudes: [0, 0, 1, 0, 0], leftAmplitudes: [0, 0, 1, 0, 0], rightAmplitudes: [0, 0, 1, 0, 0])
+    }
+    static func some0SamplesWith1sInTheMiddle() -> [AudioSample] {
+        return self.samplesFromDatas(intervals: [0, 1, 2, 3, 4, 5, 6], frequencies: [0, 0, 0, 0, 0, 0, 0], amplitudes: [0, 0, 1, 1, 1, 0, 0], leftAmplitudes: [0, 0, 1, 1, 1, 0, 0], rightAmplitudes: [0, 0, 1, 1, 1, 0, 0])
+    }
+    static func some0SamplesWith1sInTheMiddleAndEnd() -> [AudioSample] {
+        return self.samplesFromDatas(intervals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], frequencies: [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0], amplitudes: [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0], leftAmplitudes: [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0], rightAmplitudes: [0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0])
+    }
+    
+    static func samples(fromAmplitudes amplitudes: [Double]) -> [AudioSample] {
+        let intervals = Array(0..<amplitudes.count).map {Double($0)}
+        return self.samplesFromDatas(intervals: intervals, frequencies: amplitudes, amplitudes: amplitudes, leftAmplitudes: amplitudes, rightAmplitudes: amplitudes)
     }
     
     func flatData() {
@@ -174,7 +287,7 @@ fileprivate struct SampleData {
         let rightAmplitudes = [0.0, 0.067431606942973829, 0.039174581631098923, 0.03246514842548677, 0.018793626145418848, 0.009892249276954982, 0.006743666324770612, 0.0062465547832967448, 0.0059635874278396823, 0.0076842542502656942, 0.010276722707238978, 0.011600451168933898, 0.0070076675983977727, 0.010667126989361866, 0.0053726079400147203, 0.019696048123953789, 0.020269549511264636, 0.0096825502663670619, 0.0047164918149051873, 0.0043451260545080798, 0.0037029108161453004, 0.0034157837643035648, 0.0028704769722852361, 0.0028018892325065818, 0.0026434198809197791, 0.002354903135530073, 0.0017338861156070034, 0.0016889287637721661, 0.0019588157789394221, 0.0018078688166311789, 0.0018188284789691543, 0.20132371529238199, 0.26668136011383176, 0.34583864178102142, 0.31152933692551621, 0.27699016315823261, 0.2208974071638416, 0.25009065359257915, 0.19134182427845589, 0.071367137411307388, 0.022042321033706749, 0.0064204632169648215, 0.0042971978437616057, 0.0042833460185806973, 0.0032468684150950135, 0.0027353497307838811, 0.0040922927079195441, 0.0037579137705410328, 0.004081337820029252, 0.003341889143607332, 0.0034853876382580362, 0.0029281575686504265, 0.0019156551011584885, 0.0016532396027065506, 0.0088651740426820211, 0.012264065152539068, 0.019716169292850694, 0.0078198281495795892, 0.0037619552581865229, 0.0036939766720777527, 0.0035968163324589983]
     }
     
-    func samplesFromDatas(intervals: [TimeInterval], frequencies: [Double], amplitudes: [Double], leftAmplitudes: [Double], rightAmplitudes: [Double]) -> [AudioSample] {
+    static func samplesFromDatas(intervals: [TimeInterval], frequencies: [Double], amplitudes: [Double], leftAmplitudes: [Double], rightAmplitudes: [Double]) -> [AudioSample] {
         
         var i = 0
         let samples = intervals.map { interval -> AudioSample in
