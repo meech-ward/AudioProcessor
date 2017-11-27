@@ -25,7 +25,12 @@ struct AudioProcessor {
         }
     }
     
-    func processBasedOnAmplitude(sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil) throws -> AudioTimeData {
+    /**
+     sampleSecondsBeforePeak: The amount of time to sample before the peak sample. Use this to make sure the entier peice of audio doens't get sampled.
+     sampleSecondsAfterPeak: Same as previous but after the peak
+     peakRange: The range to test the peak for. If this number number was 0.2, then any sound with an aplitude between the biggest amplitude and 0.2 minus that amplitude will be counted for the peak position.
+    */
+    func processBasedOnAmplitude(sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil, peakRange: Double = 0.0) throws -> AudioTimeData {
         try makeSureSamplesHaveAmplitude()
         
         var start: TimeInterval = samples.first!.time
@@ -39,7 +44,7 @@ struct AudioProcessor {
         }
         
         // Peak
-        let lastPeakIndex = self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
+        let lastPeakIndex = self.intendedPeakIndex(peakRange: peakRange)//self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
         
         var startSampleIndex = 0
         var endSampleIndex = samples.count - 1
@@ -83,7 +88,7 @@ struct AudioProcessor {
         let averageAmplitudeChanges = self.averageAmplitudeChangeBetweenSamples(startIndex: startSampleIndex, endIndex: endSampleIndex)
         
         // End time
-        for i in lastPeakIndex...endSampleIndex {
+        for i in lastPeakIndex..<samples.count {
             let sample = samples[i]
 
             if (sample.amplitude! < averageAmplitudeChanges.negative)  {
@@ -94,7 +99,7 @@ struct AudioProcessor {
         
 //        var averageChangeBetweenSamples
         // Start Time
-        for i in (startSampleIndex-1..<lastPeakIndex).reversed() {
+        for i in (0..<lastPeakIndex).reversed() {
             let sample = samples[i]
             
             if (sample.amplitude! < averageAmplitudeChanges.positive)  {
@@ -204,5 +209,90 @@ extension AudioProcessor {
             negativeAverage = totalNegativeAmplitudeChange/Double(totalNegativeChanges)
         }
         return (positiveAverage, negativeAverage)
+    }
+    
+    private func peakIndexes(peakRange: Double = 0.0) -> [Int] {
+        let biggestSample = self.largestSample()
+        let smallestSample = self.smallestSample()
+        let peakIndex = self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
+        let peakAmplitude = samples[peakIndex].amplitude!
+        
+        var largestIndexes = [Int]()
+        for (index, sample) in samples.enumerated() {
+            var lastSample: AudioSample?
+            var nextSample: AudioSample?
+            if index > 0 {
+                lastSample = samples[index-1]
+            }
+            if index < samples.count-1 {
+                lastSample = samples[index+1]
+            }
+            guard let amplitude = sample.amplitude else {
+                continue
+            }
+            
+            if amplitude >= peakAmplitude-peakRange {
+                
+                if let lastSample = lastSample {
+                    if lastSample.amplitude! > sample.amplitude! {
+                        continue
+                    }
+                }
+                
+                if let nextSample = nextSample {
+                    if nextSample.amplitude! > sample.amplitude! {
+                        continue
+                    }
+                }
+                
+                largestIndexes.append(index)
+            }
+        }
+        
+        return largestIndexes
+    }
+    
+    func intendedPeakIndex(peakRange: Double = 0.0) -> Int {
+
+        var largestIndexes = peakIndexes(peakRange: peakRange)
+        
+        if largestIndexes.count == 1 {
+            return largestIndexes[0]
+        }
+        
+        var averageAmplitudes = [Double]()
+        for index in largestIndexes {
+            var averageAmplitude = 0.0
+            var numberOfAmplitudes = 0
+            for innerIndex in 0..<11 {
+                let currentIndex = innerIndex+index-5
+                if currentIndex < 0 || currentIndex >= samples.count {
+                    continue
+                }
+                
+                let sample = samples[currentIndex]
+                guard let amplitude = sample.amplitude else {
+                    continue
+                }
+                numberOfAmplitudes += 1
+                averageAmplitude += amplitude
+            }
+            
+            averageAmplitude /= Double(numberOfAmplitudes)
+            averageAmplitudes.append(averageAmplitude)
+        }
+        
+        var largestAverageAmplitude = 0.0
+        var largestAmplitudeIndex = 0
+        for (index, amplitude) in averageAmplitudes.enumerated() {
+            if amplitude >= largestAverageAmplitude {
+                largestAverageAmplitude = amplitude
+                largestAmplitudeIndex = index
+            }
+        }
+        
+        
+        var largestIndex = largestIndexes[largestAmplitudeIndex]
+        return largestIndex
     }
 }
