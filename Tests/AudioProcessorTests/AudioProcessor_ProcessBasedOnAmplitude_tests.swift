@@ -75,7 +75,7 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                         let samples = SampleData.some0SamplesWith1InTheMiddle()
                         let processor = AudioProcessor(samples: samples)
                         let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[2].time).to.be.true()
+                        expect(timeData?.startTime == samples[1].time).to.be.true()
                         expect(timeData?.endTime == samples[3].time).to.be.true()
                     }
                 }
@@ -85,7 +85,7 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                         let samples = SampleData.some0SamplesWith1sInTheMiddle()
                         let processor = AudioProcessor(samples: samples)
                         let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[2].time).to.be.true()
+                        expect(timeData?.startTime == samples[1].time).to.be.true()
                         expect(timeData?.endTime == samples[5].time).to.be.true()
                     }
                 }
@@ -95,17 +95,17 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                         let samples = SampleData.some0SamplesWith1sInTheMiddleAndEnd()
                         let processor = AudioProcessor(samples: samples)
                         let timeData = try? processor.processBasedOnAmplitude()
-                        expect(timeData?.startTime == samples[7].time).to.be.true()
+                        expect(timeData?.startTime == samples[6].time).to.be.true()
                         expect(timeData?.endTime == samples[10].time).to.be.true()
                     }
                 }
                 
                 context("given some samples") {
                     it("should find the correct times") {
-                        self.expectAmplitudes([0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 10, andEndIndex: 18)
-                        self.expectAmplitudes([0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 20, andEndIndex: 28)
-                        self.expectAmplitudes([0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 5, andEndIndex: 12)
-                        self.expectAmplitudes([0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0.1, 0.02, 0.04, 0.1], toHaveStartIndex: 5, andEndIndex: 12)
+                        self.expectAmplitudes([0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 9, andEndIndex: 18)
+                        self.expectAmplitudes([0, 0,0, 0,0, 0,0, 0,0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0, 0.25, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 19, andEndIndex: 28)
+                        self.expectAmplitudes([0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0, 0], toHaveStartIndex: 4, andEndIndex: 12)
+                        self.expectAmplitudes([0, 0.1, 0.05, 0.15, 0.05, 0.5, 1, 1, 1, 0.75, 0.5, 0.25, 0.1, 0.02, 0.04, 0.1], toHaveStartIndex: 4, andEndIndex: 12)
                     }
                 }
                 
@@ -118,15 +118,15 @@ class AudioProcessor_ProcessBasedOnAmplitude_tests: XCTestCase {
                 context("getting start and end based on distance from peak") {
                     context("given sample seconds that exceed the audio") {
                         it("should return data for the entire sample set") {
-                            self.expectAmplitudes([0.0,0.5,1.0,0.5,0.0], toHaveStartIndex: 1, andEndIndex: 3, sampleSecondsBeforePeak: 10.0, sampleSecondsAfterPeak: 10.0)
+                            self.expectAmplitudes([0.0,0.5,1.0,0.5,0.0], toHaveStartIndex: 0, andEndIndex: 3, sampleSecondsBeforePeak: 10.0, sampleSecondsAfterPeak: 10.0)
                         }
                     }
                     context("given some samples") {
                         it("should return the correct data") {
-                            self.expectAmplitudes([0.0, 1.0, 2.0, 3.0, 4.0,5.0, 1.0, 2.0, 3.0,4.0, 5.0, 1.0, 2.0,3.0, 4.0, 5.0, 1.0, 2.0, 3.0, 4.0, 5.0, 2.0, 1.0, 2.0, 4.0, 5.0, 8.0, 5.0, 0.0], toHaveStartIndex: 23, andEndIndex: 28, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 2.0)
-                            self.expectAmplitudes([0,0,0,1.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.1,0.2,0,0.3,0.4,0.5,0.1,0.2,0.3,0.4,0.2,0.3,0.5,1.0,0.5,1.0,2.0, 1.0, 2.0, 4.0, 5.0, 8.0, 5.0, 0.0], toHaveStartIndex: 36, andEndIndex: 42, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 2.0)
+                            self.expectAmplitudes([0.0, 1.0, 2.0, 3.0, 4.0,5.0, 1.0, 2.0, 3.0,4.0, 5.0, 1.0, 2.0,3.0, 4.0, 5.0, 1.0, 2.0, 3.0, 4.0, 5.0, 2.0, 1.0, 2.0, 4.0, 5.0, 8.0, 5.0, 0.0], toHaveStartIndex: 22, andEndIndex: 28, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 2.0)
+                            self.expectAmplitudes([0,0,0,1.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.1,0.2,0,0.3,0.4,0.5,0.1,0.2,0.3,0.4,0.2,0.3,0.5,1.0,0.5,1.0,2.0, 1.0, 2.0, 4.0, 5.0, 8.0, 5.0, 0.0], toHaveStartIndex: 35, andEndIndex: 42, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 2.0)
 
-                            self.expectAmplitudes([0.0, 1.0, 2.0, 5.0, 3.0, 2.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1], toHaveStartIndex: 1, andEndIndex: 6, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 4.0)
+                            self.expectAmplitudes([0.0,0.0, 1.0, 2.0, 5.0, 3.0, 2.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1, 0.5, 0.4, 0.3, 0.2, 0.1], toHaveStartIndex: 1, andEndIndex: 7, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 4.0)
                             
 //                            self.expectAmplitudes([0.0, 1.0, 2.0, 5.0, 3.0, 2.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,], toHaveStartIndex: 1, andEndIndex: 6, sampleSecondsBeforePeak: 3.0, sampleSecondsAfterPeak: 4.0)
                             

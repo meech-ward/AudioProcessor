@@ -103,7 +103,7 @@ struct AudioProcessor {
             let sample = samples[i]
             
             if (sample.amplitude! < averageAmplitudeChanges.positive)  {
-                start = samples[i+1].time
+                start = samples[i].time
                 break
             }
         }
