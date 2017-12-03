@@ -29,11 +29,13 @@ public struct AudioRecorder {
         self.frequencyTracker = frequencyTracker
         self.amplitudeTracker = amplitudeTracker
     }
-    
-    func start() {
-        _recordable.start()
+
+    func start(closure: (@escaping (_ successfully: Bool) -> ()) = {_ in }) {
         sendNewDataSample()
         self.dataTimer?.start(self.sendNewDataSample)
+        _recordable.start() { successful in
+//            closure(successful)
+        }
     }
     
     /// Create an audio sample and send it to the data closure
@@ -60,8 +62,10 @@ public struct AudioRecorder {
         return AudioSample(time: time, amplitude: amplitude, rightAmplitude: rightAmplitude, leftAmplitude: leftAmplitude, frequency: frequency, power: power)
     }
     
-    func stop() {
-        _recordable.stop()
+    func stop(closure: (@escaping (_ successfully: Bool) -> ()) = {_ in }) {
+        _recordable.stop() { successful in
+//            closure(successful)
+        }
         self.dataTimer?.stop()
     }
     

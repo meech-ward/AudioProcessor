@@ -11,10 +11,10 @@ import Foundation
 public protocol AudioRecordable {
     
     /// Start Recording
-    func start()
+    func start(closure: (@escaping (_ successfully: Bool) -> ()))
     
     /// Stop Recording
-    func stop()
+    func stop(closure: (@escaping (_ successfully: Bool) -> ()))
     
     /// The time, in seconds, since the beginning of the recording.
     var currentTime: TimeInterval { get }

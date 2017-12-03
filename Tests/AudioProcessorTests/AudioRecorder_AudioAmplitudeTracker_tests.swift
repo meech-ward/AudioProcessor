@@ -54,7 +54,7 @@ class AudioRecorder_AudioAmplitudeTracker_tests: XCTestCase {
                             
                             
                             func itShouldPassInInitial(_ thing: String, setter: @escaping ((Double) -> (Void)), getter: @escaping (() -> (Double?))) {
-                                itShouldCheckValue(thing: thing, inbetweenFunction: audioRecorder.start, setter: setter, getter: getter)
+                                itShouldCheckValue(thing: thing, inbetweenFunction: {audioRecorder.start()}, setter: setter, getter: getter)
                             }
                             
                             itShouldPassInInitial("amplitude", setter: mockAmplitudeTracker.setAmplitude, getter: { audioSample?.amplitude })
