@@ -34,7 +34,7 @@ public struct AudioRecorder {
         sendNewDataSample()
         self.dataTimer?.start(self.sendNewDataSample)
         _recordable.start() { successful in
-//            closure(successful)
+            closure(successful)
         }
     }
     
@@ -64,7 +64,7 @@ public struct AudioRecorder {
     
     func stop(closure: (@escaping (_ successfully: Bool) -> ()) = {_ in }) {
         _recordable.stop() { successful in
-//            closure(successful)
+            closure(successful)
         }
         self.dataTimer?.stop()
     }
