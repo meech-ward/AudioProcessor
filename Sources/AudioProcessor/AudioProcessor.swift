@@ -25,6 +25,14 @@ struct AudioProcessor {
         }
     }
     
+    private func hasNoSignificantNoise(startSampleIndex: Int, endSampleIndex: Int, largestAmplitude: Double) -> Bool {
+        let averageAmapliutes = self.averageAmplitudes(startSampleIndex: startSampleIndex, endSampleIndex: endSampleIndex)
+        let noSignificantNoise = averageAmapliutes*2 > largestAmplitude
+        return noSignificantNoise
+    }
+    
+    
+    
     /**
      sampleSecondsBeforePeak: The amount of time to sample before the peak sample. Use this to make sure the entier peice of audio doens't get sampled.
      sampleSecondsAfterPeak: Same as previous but after the peak
@@ -43,52 +51,17 @@ struct AudioProcessor {
             return AudioTimeData(startTime: start, endTime: end)
         }
         
-        // Peak
-        let lastPeakIndex = self.intendedPeakIndex(peakRange: peakRange)//self.lastPeakIndex(peakSample: biggestSample, valleySample: smallestSample)
+        // intendedNoiseIndex
+        let (intendedNoisePeakIndex, intendedNoiseStartSampleIndex, intendedNoiseEndSampleIndex) = intendedNoiseIndexes(peakRange: peakRange, sampleSecondsBeforePeak: sampleSecondsBeforePeak, sampleSecondsAfterPeak: sampleSecondsAfterPeak)
         
-        var startSampleIndex = 0
-        var endSampleIndex = samples.count - 1
-        
-        // Before Peak
-        if let seconds = sampleSecondsBeforePeak {
-            let peakSeconds = samples[lastPeakIndex].time
-            let secondsToStartAt = peakSeconds - seconds
-            
-            if secondsToStartAt > 0 {
-                for (index, sample) in samples.enumerated() {
-                    if sample.time > secondsToStartAt {
-                        startSampleIndex = max(0, index-1)
-                        break
-                    }
-                }
-            }
-        }
-        
-        // After Peak
-        if let seconds = sampleSecondsAfterPeak {
-            let peakSeconds = samples[lastPeakIndex].time
-            let secondsToEndAt = peakSeconds + seconds
-            
-            if secondsToEndAt < samples.last!.time {
-                for (index, sample) in samples.enumerated().reversed() {
-                    if sample.time < secondsToEndAt {
-                        endSampleIndex = min(samples.count-1, index+1)
-                        break
-                    }
-                }
-            }
-        }
-        
-        // IF there's no significant noise
-        let averageAmapliutes = self.averageAmplitudes(startSampleIndex: startSampleIndex, endSampleIndex: endSampleIndex)
-        if averageAmapliutes*2 > biggestSample.amplitude! {
+        if hasNoSignificantNoise(startSampleIndex: intendedNoiseStartSampleIndex, endSampleIndex: intendedNoiseEndSampleIndex, largestAmplitude: biggestSample.amplitude!) {
             return AudioTimeData(startTime: start, endTime: end)
         }
         
-        let averageAmplitudeChanges = self.averageAmplitudeChangeBetweenSamples(startIndex: startSampleIndex, endIndex: endSampleIndex)
+        let averageAmplitudeChanges = self.averageAmplitudeChangeBetweenSamples(startIndex: intendedNoiseStartSampleIndex, endIndex: intendedNoiseEndSampleIndex)
         
         // End time
-        for i in lastPeakIndex..<samples.count {
+        for i in intendedNoisePeakIndex..<samples.count {
             let sample = samples[i]
 
             if (sample.amplitude! < averageAmplitudeChanges.negative)  {
@@ -96,10 +69,9 @@ struct AudioProcessor {
                 break
             }
         }
-        
-//        var averageChangeBetweenSamples
+
         // Start Time
-        for i in (0..<lastPeakIndex).reversed() {
+        for i in (0..<intendedNoisePeakIndex).reversed() {
             let sample = samples[i]
             
             if (sample.amplitude! < averageAmplitudeChanges.positive)  {
@@ -251,9 +223,20 @@ extension AudioProcessor {
         
         return largestIndexes
     }
+}
+
+// intendedNoiseIndex
+extension AudioProcessor {
+    
+    func intendedNoiseIndexes(peakRange: Double = 0.0, sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil) -> (peak: Int, start: Int, end: Int) {
+        let intendedNoisePeakIndex = self.intendedPeakIndex(peakRange: peakRange)
+        let intendedNoiseStartSampleIndex = self.intendedNoiseStartSampleIndex(intendedNoisePeakIndex: intendedNoisePeakIndex, sampleSecondsBeforePeak: sampleSecondsBeforePeak)
+        let intendedNoiseEndSampleIndex = self.intendedNoiseEndSampleIndex(intendedNoisePeakIndex: intendedNoisePeakIndex, sampleSecondsAfterPeak: sampleSecondsAfterPeak)
+        return (intendedNoisePeakIndex, intendedNoiseStartSampleIndex, intendedNoiseEndSampleIndex)
+    }
     
     func intendedPeakIndex(peakRange: Double = 0.0) -> Int {
-
+        
         var largestIndexes = peakIndexes(peakRange: peakRange)
         
         if largestIndexes.count == 1 {
@@ -292,7 +275,42 @@ extension AudioProcessor {
         }
         
         
-        var largestIndex = largestIndexes[largestAmplitudeIndex]
-        return largestIndex
+        return largestIndexes[largestAmplitudeIndex]
+    }
+    
+    private func intendedNoiseStartSampleIndex(intendedNoisePeakIndex: Int, sampleSecondsBeforePeak: TimeInterval? = nil) -> Int {
+        var startSampleIndex = 0
+        if let seconds = sampleSecondsBeforePeak {
+            let peakSeconds = samples[intendedNoisePeakIndex].time
+            let secondsToStartAt = peakSeconds - seconds
+            
+            if secondsToStartAt > 0 {
+                for (index, sample) in samples.enumerated() {
+                    if sample.time > secondsToStartAt {
+                        startSampleIndex = max(0, index-1)
+                        break
+                    }
+                }
+            }
+        }
+        return startSampleIndex
+    }
+    
+    private func intendedNoiseEndSampleIndex(intendedNoisePeakIndex: Int, sampleSecondsAfterPeak: TimeInterval? = nil) -> Int {
+        var endSampleIndex = samples.count - 1
+        if let seconds = sampleSecondsAfterPeak {
+            let peakSeconds = samples[intendedNoisePeakIndex].time
+            let secondsToEndAt = peakSeconds + seconds
+            
+            if secondsToEndAt < samples.last!.time {
+                for (index, sample) in samples.enumerated().reversed() {
+                    if sample.time < secondsToEndAt {
+                        endSampleIndex = min(samples.count-1, index+1)
+                        break
+                    }
+                }
+            }
+        }
+        return endSampleIndex
     }
 }
