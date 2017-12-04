@@ -38,7 +38,7 @@ struct AudioProcessor {
      sampleSecondsAfterPeak: Same as previous but after the peak
      peakRange: The range to test the peak for. If this number number was 0.2, then any sound with an aplitude between the biggest amplitude and 0.2 minus that amplitude will be counted for the peak position.
     */
-    func processBasedOnAmplitude(sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil, peakRange: Double = 0.0) throws -> AudioTimeData {
+    func processBasedOnAmplitude(sampleSecondsBeforePeak: TimeInterval? = nil, sampleSecondsAfterPeak: TimeInterval? = nil, peakRange: Double = 0.0, checkForNoSignificantNoise: Bool = true) throws -> AudioTimeData {
         try makeSureSamplesHaveAmplitude()
         
         var start: TimeInterval = samples.first!.time
@@ -54,7 +54,7 @@ struct AudioProcessor {
         // intendedNoiseIndex
         let (intendedNoisePeakIndex, intendedNoiseStartSampleIndex, intendedNoiseEndSampleIndex) = intendedNoiseIndexes(peakRange: peakRange, sampleSecondsBeforePeak: sampleSecondsBeforePeak, sampleSecondsAfterPeak: sampleSecondsAfterPeak)
         
-        if hasNoSignificantNoise(startSampleIndex: intendedNoiseStartSampleIndex, endSampleIndex: intendedNoiseEndSampleIndex, largestAmplitude: biggestSample.amplitude!) {
+        if checkForNoSignificantNoise && hasNoSignificantNoise(startSampleIndex: intendedNoiseStartSampleIndex, endSampleIndex: intendedNoiseEndSampleIndex, largestAmplitude: biggestSample.amplitude!) {
             return AudioTimeData(startTime: start, endTime: end)
         }
         
@@ -96,7 +96,7 @@ extension AudioProcessor {
     }
     
     private func smallestSample() -> AudioSample {
-        return samples.reduce(AudioSample(time: 0, amplitude: 0)) { initial, next in
+        return samples.reduce(samples[0]) { initial, next in
             if initial.amplitude! > next.amplitude! {
                 return next
             }
