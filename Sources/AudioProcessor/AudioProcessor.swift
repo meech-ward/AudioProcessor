@@ -197,7 +197,7 @@ extension AudioProcessor {
                 lastSample = samples[index-1]
             }
             if index < samples.count-1 {
-                lastSample = samples[index+1]
+                nextSample = samples[index+1]
             }
             guard let amplitude = sample.amplitude else {
                 continue
