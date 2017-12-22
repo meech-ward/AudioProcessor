@@ -7,7 +7,7 @@
 
 import Foundation
 
-typealias AudioRecorderDataClosure = ((_ audioSample: AudioSample, _ audioRecordable: AudioRecordable) -> (Void))
+public typealias AudioRecorderDataClosure = ((_ audioSample: AudioSample, _ audioRecordable: AudioRecordable) -> (Void))
 
 public struct AudioRecorder {
     
@@ -21,7 +21,7 @@ public struct AudioRecorder {
     private let frequencyTracker: AudioFrequencyTracker?
     private let amplitudeTracker: AudioAmplitudeTracker?
     
-    init(recordable: AudioRecordable, powerTracker: AudioPowerTracker? = nil, frequencyTracker: AudioFrequencyTracker? = nil,  amplitudeTracker: AudioAmplitudeTracker? = nil, dataTimer: TimerType? = nil, dataClosure: AudioRecorderDataClosure? = nil) {
+    public init(recordable: AudioRecordable, powerTracker: AudioPowerTracker? = nil, frequencyTracker: AudioFrequencyTracker? = nil,  amplitudeTracker: AudioAmplitudeTracker? = nil, dataTimer: TimerType? = nil, dataClosure: AudioRecorderDataClosure? = nil) {
         self._recordable = recordable
         self.dataClosure = dataClosure ?? {_,_ in }
         self.dataTimer = dataTimer
@@ -30,7 +30,7 @@ public struct AudioRecorder {
         self.amplitudeTracker = amplitudeTracker
     }
 
-    func start(closure: (@escaping (_ successfully: Bool) -> ()) = {_ in }) {
+    public func start(closure: (@escaping (_ successfully: Bool) -> ()) = {_ in }) {
         sendNewDataSample()
         self.dataTimer?.start(self.sendNewDataSample)
         _recordable.start() { successful in
@@ -62,7 +62,7 @@ public struct AudioRecorder {
         return AudioSample(time: time, amplitude: amplitude, rightAmplitude: rightAmplitude, leftAmplitude: leftAmplitude, frequency: frequency, power: power)
     }
     
-    func stop(closure: (@escaping (_ successfully: Bool) -> ()) = {_ in }) {
+    public func stop(closure: (@escaping (_ successfully: Bool) -> ()) = {_ in }) {
         _recordable.stop() { successful in
             closure(successful)
         }

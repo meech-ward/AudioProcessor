@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AudioTimeData {
-    let startTime: TimeInterval
-    let endTime: TimeInterval
+public struct AudioTimeData {
+    public let startTime: TimeInterval
+    public let endTime: TimeInterval
 }
