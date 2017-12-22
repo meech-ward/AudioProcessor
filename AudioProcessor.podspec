@@ -82,7 +82,7 @@ Pod::Spec.new do |s|
   #
 
   # s.source       = { :git => "https://github.com/meech-ward/AudioProcessor.git", :tag => "#{s.version}" }
-  s.source       = { :git => "https://github.com/meech-ward/AudioProcessor.git", :branch => "develop" }
+  s.source       = { :git => "https://github.com/meech-ward/AudioProcessor.git", :branch => "master" }
   # s.source       = { :path => "./"}
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
