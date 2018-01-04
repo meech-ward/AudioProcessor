@@ -6,9 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+### Changed
+
+## [0.1.0] - 2018-01-03
+### Added
 - Podspec to be installed through cocoapods
 
 ### Changed
+- Make necessary access changes to use this as a framework
 
 ## [0.0.1] - 2017-11-28
 ### Added
