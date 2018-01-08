@@ -1,5 +1,5 @@
 #
-#  Be sure to run `pod spec lint AudioProcessor.podspec' to ensure this is a
+#  Be sure to run `pod spec lint AudioIO.podspec' to ensure this is a
 #  valid spec and to remove all comments including this before submitting the spec.
 #
 #  To learn more about Podspec attributes see http://docs.cocoapods.org/specification.html
@@ -15,8 +15,8 @@ Pod::Spec.new do |s|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  s.name         = "AudioProcessor"
-  s.version      = "0.0.1"
+  s.name         = "AudioIO"
+  s.version      = "0.1."
   s.summary      = "A library for processing short peices of audio."
 
   # This description is used to generate tags and improve search results.
@@ -29,7 +29,7 @@ Pod::Spec.new do |s|
   It's main purpose is to cut intended audio out of longer peices of audio.
                    DESC
 
-  s.homepage     = "https://github.com/meech-ward/AudioProcessor"
+  s.homepage     = "https://github.com/meech-ward/AudioIO"
   # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
 
 
@@ -81,8 +81,8 @@ Pod::Spec.new do |s|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  # s.source       = { :git => "https://github.com/meech-ward/AudioProcessor.git", :tag => "#{s.version}" }
-  s.source       = { :git => "https://github.com/meech-ward/AudioProcessor.git", :branch => "master" }
+  # s.source       = { :git => "https://github.com/meech-ward/AudioIO.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/meech-ward/AudioIO.git", :branch => "master" }
   # s.source       = { :path => "./"}
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -93,7 +93,7 @@ Pod::Spec.new do |s|
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "Sources/AudioProcessor"
+  s.source_files  = "Sources/AudioIO"
   s.exclude_files = "Tests"
 
 
