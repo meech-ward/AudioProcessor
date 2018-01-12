@@ -10,17 +10,6 @@ import Observe
 import Focus
 @testable import AudioIO
 
-fileprivate class MockAudioAmplitudeTracker: AudioAmplitudeTracker {
-    func setAmplitude(_ amplitude: Double) {
-        self.amplitude = amplitude
-    }
-    var amplitude: Double?
-    
-    var rightAmplitude: Double?
-    
-    var leftAmplitude: Double?
-}
-
 /// Tests for the Audio Recorder Object when initialized with an AudioPowerTracker
 class AudioRecorder_AudioAmplitudeTracker_tests: XCTestCase {
     
