@@ -12,6 +12,10 @@ public struct AudioInput {
   let microphone: MicrophoneType & StartAndStopable
   let amplitudeTracker: (AudioAmplitudeTracker & StartAndStopable)?
   
+  var amplitude: Double? {
+    return amplitudeTracker?.amplitude
+  }
+  
   public init (microphone: MicrophoneType & StartAndStopable,
                bufferClosure: @escaping ((UnsafeMutablePointer<Float>, Int) -> (Void)),
                amplitudeTracker: (AudioAmplitudeTracker & StartAndStopable)? = nil) {

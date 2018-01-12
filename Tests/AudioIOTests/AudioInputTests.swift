@@ -60,8 +60,15 @@ class AudioInputTests: XCTestCase {
                 expect(amplitudeTracker.started).to.be.true()
               }
               
-              context("when the amplitude is checked") {
-                
+              context("when the audio input amplitude is checked") {
+                it("should be equal to the amplitude trackers amplitude") {
+                  amplitudeTracker.setAmplitude(0.0)
+                  expect(audioInput.amplitude == 0.0).to.be.true()
+                  amplitudeTracker.setAmplitude(1.0)
+                  expect(audioInput.amplitude == 1.0).to.be.true()
+                  amplitudeTracker.setAmplitude(1.2)
+                  expect(audioInput.amplitude == 1.2).to.be.true()
+                }
               }
             }
             
