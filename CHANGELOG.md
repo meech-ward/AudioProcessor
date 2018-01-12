@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Podspec to be installed through cocoapods
 
 ### Changed
+- Make necessary access changes to use this as a framework
 
 ## [0.0.1] - 2017-11-28
 ### Added
