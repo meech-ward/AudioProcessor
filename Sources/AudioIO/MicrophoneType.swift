@@ -7,6 +7,6 @@
 
 import Foundation
 
-public protocol MicrophoneType {
-  
+public protocol MicrophoneType: class {
+  var bufferClosure: ((UnsafeMutablePointer<Float>, Int) -> (Void)) { get set }
 }

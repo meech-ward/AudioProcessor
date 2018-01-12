@@ -9,8 +9,25 @@ import Foundation
 
 public struct AudioInput {
   
-  init (microphone: MicrophoneType) {
-    
+  let microphone: MicrophoneType & StartAndStopable
+  let amplitudeTracker: (AudioAmplitudeTracker & StartAndStopable)?
+  
+  public init (microphone: MicrophoneType & StartAndStopable,
+               bufferClosure: @escaping ((UnsafeMutablePointer<Float>, Int) -> (Void)),
+               amplitudeTracker: (AudioAmplitudeTracker & StartAndStopable)? = nil) {
+    self.microphone = microphone
+    self.amplitudeTracker = amplitudeTracker
+    microphone.bufferClosure = bufferClosure
+  }
+  
+  public func start() {
+    microphone.start()
+    amplitudeTracker?.start()
+  }
+  
+  public func stop() {
+    microphone.stop()
+    amplitudeTracker?.stop()
   }
   
 }
