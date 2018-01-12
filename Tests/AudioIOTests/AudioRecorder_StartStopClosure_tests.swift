@@ -1,7 +1,7 @@
 import XCTest
 import Observe
 import Focus
-@testable import AudioProcessor
+@testable import AudioIO
 
 class AudioRecorder_StartStopClosure_tests: XCTestCase {
     

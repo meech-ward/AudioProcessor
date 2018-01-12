@@ -8,7 +8,7 @@
 import XCTest
 import Observe
 import Focus
-@testable import AudioProcessor
+@testable import AudioIO
 
 fileprivate class MockAudioAmplitudeTracker: AudioAmplitudeTracker {
     func setAmplitude(_ amplitude: Double) {
