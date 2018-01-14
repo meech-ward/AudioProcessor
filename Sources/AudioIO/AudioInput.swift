@@ -12,7 +12,7 @@ public struct AudioInput {
   let microphone: MicrophoneType & StartAndStopable
   let amplitudeTracker: (AudioAmplitudeTracker & StartAndStopable)?
   
-  var amplitude: Double? {
+  public var amplitude: Double? {
     return amplitudeTracker?.amplitude
   }
   
