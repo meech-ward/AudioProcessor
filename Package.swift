@@ -5,12 +5,12 @@ import PackageDescription
 
 
 let package = Package(
-    name: "AudioProcessor",
+    name: "AudioIO",
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
-            name: "AudioProcessor",
-            targets: ["AudioProcessor"]),
+            name: "AudioIO",
+            targets: ["AudioIO"]),
     ],
     dependencies: [
         .package(url: "../AudioIO", from: "0.2.2"),
