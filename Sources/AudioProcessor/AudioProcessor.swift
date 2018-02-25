@@ -1,5 +1,6 @@
 
 import Foundation
+import AudioIO
 
 public enum AudioProcessorError: Error {
     case noData

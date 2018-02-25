@@ -1,6 +1,8 @@
 import XCTest
 import Observe
 import Focus
+import AudioIO
+
 @testable import AudioProcessor
 
 /// Tests for the Audio Recorder Object when initialized with an Audio Recordable

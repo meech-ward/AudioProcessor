@@ -7,8 +7,15 @@
 
 @testable import AudioProcessor
 import Foundation
+import AudioIO
 
 class MockRecordable: AudioRecordable {
+  func delete(closure: @escaping ((Bool) -> ())) {
+    
+  }
+  
+  var isRecording: Bool = false
+  
     
     var currentTime: TimeInterval = 0
     var startClosure: ((Bool) -> ())?

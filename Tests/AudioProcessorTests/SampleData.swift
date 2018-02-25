@@ -6,6 +6,8 @@
 //
 @testable import AudioProcessor
 import Foundation
+import AudioIO
+
 struct SampleData {
     
     static func noData() -> [AudioSample] {
