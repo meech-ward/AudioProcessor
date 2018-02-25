@@ -13,6 +13,7 @@ let package = Package(
             targets: ["AudioProcessor"]),
     ],
     dependencies: [
+        .package(url: "../AudioIO", from: "0.2.2"),
         .package(url: "https://github.com/meech-ward/Observe", from: "0.5.1"),
         .package(url: "https://github.com/meech-ward/Focus", from: "0.6.2")
     ],
@@ -21,9 +22,9 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "AudioProcessor",
-            dependencies: []),
+            dependencies: ["AudioIO"]),
         .testTarget(
             name: "AudioProcessorTests",
-            dependencies: ["AudioProcessor", "Observe", "Focus"]),
+            dependencies: ["AudioProcessor", "AudioIO", "Observe", "Focus"]),
     ]
 )
