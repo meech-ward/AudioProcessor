@@ -7,6 +7,7 @@
 
 @testable import AudioProcessor
 import Foundation
+import AudioIO
 
 class MockTimer: TimerType {
     
