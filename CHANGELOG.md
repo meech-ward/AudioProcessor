@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [0.3.1] - 2018-02-24
+### Added
+
+### Changed
+- Remove all the Audio IO code, that's in a different package now
+- Rename to AudioProcessor
+- Remove cocoapods
+
+## [0.2.0] - 2018-01-03
+### Added
+
+### Changed
+- Rename to AudioIO
+
 ## [0.1.0] - 2018-01-03
 ### Added
 - Podspec to be installed through cocoapods
