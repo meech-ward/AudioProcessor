@@ -4,8 +4,10 @@
 //
 //  Created by Sam Meech-Ward on 2017-11-25.
 //
-@testable import AudioProcessor
+@testable import AudioIO
 import Foundation
+import AudioIO
+
 struct SampleData {
     
     static func noData() -> [AudioSample] {

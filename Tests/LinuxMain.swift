@@ -1,6 +1,6 @@
 import XCTest
-@testable import AudioProcessorTests
+@testable import AudioIOTests
 
 XCTMain([
-    testCase(AudioProcessorTests.allTests),
+    testCase(AudioIOTests.allTests),
 ])

@@ -1,7 +1,7 @@
 import XCTest
 import Observe
 import Focus
-@testable import AudioProcessor
+@testable import AudioIO
 
 fileprivate class MockAudioFrequencyTracker: AudioFrequencyTracker {
     var frequency: Double?

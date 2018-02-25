@@ -9,12 +9,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+## [0.3.1] - 2018-02-24
+### Added
+
+### Changed
+- Remove all the Audio IO code, that's in a different package now
+- Rename to AudioProcessor
+- Remove cocoapods
+
+## [0.2.0] - 2018-01-03
+### Added
+
+### Changed
+- Rename to AudioIO
+
 ## [0.1.0] - 2018-01-03
 ### Added
 - Podspec to be installed through cocoapods
 
 ### Changed
 - Make necessary access changes to use this as a framework
+
+## [0.1.0] - 2018-01-14
+### Added
+- `AudioInput` struct to manage input sensors such as microphones.
+- `MicrophoneType` protocol for a hardware microphone to conform to.
+
+### Changed
+- Expose isRecording in the recorder
+- Remove all processing code, this framework only deals with AudioIO now.
 
 ## [0.0.1] - 2017-11-28
 ### Added

@@ -1,7 +1,7 @@
 import XCTest
 import Observe
 import Focus
-@testable import AudioProcessor
+@testable import AudioIO
 
 /// Tests for the Audio Recorder Object when initialized with an Audio Recordable
 class AudioRecorder_AudioRecordable_Tests: XCTestCase {
@@ -35,6 +35,17 @@ class AudioRecorder_AudioRecordable_Tests: XCTestCase {
                         expect(mockRecordable.stopped).to.be.true()
                     }
                 }
+              
+              describe(".isRecording") {
+                
+                it("should return the current state of the recordable") {
+                  mockRecordable.isRecording = false
+                  expect(audioRecorder.isRecording == false).to.be.true()
+                  
+                  mockRecordable.isRecording = true
+                  expect(audioRecorder.isRecording == true).to.be.true()
+                }
+              }
                 
                 context("when initialized with an audio data closure") {
                     
